@@ -127,9 +127,9 @@ kernel-link:
 			kernel/asm/$(ISA_TYPE)-bit/stdlib.o  \
 			kernel/asm/$(ISA_TYPE)-bit/irq.o     \
 			kernel/asm/$(ISA_TYPE)-bit/mmu.o     \
-			kernel/asm/$(ISA_TYPE)-bit/process.o \
 			$(KERNEL_FILES_C_COMMON) \
 			kernel/c/$(ISA_TYPE)-bit/*.o
+#			kernel/asm/$(ISA_TYPE)-bit/process.o \
 #			$(USPI_HOME)/lib/libuspi.a $(USPI_HOME)/env/lib/libuspienv.a
 
 	$(OBJCOPY) -I elf32-little -O binary --strip-debug --strip-unneeded --verbose kernel.elf kernel.bin 
