@@ -15,6 +15,7 @@
  */
 
 
+#include <stdint.h>
 
 #ifndef FAT32_H
 #define FAT32_H
@@ -33,7 +34,7 @@
 
     // up to a maximum of 4 register values can be passed in/out of an SWI using this structure
 	struct _kernel_regs {
-		unsigned int r[ 4 ];
+		uintptr_t r[ 4 ];
 	};
 
 	// macro to invoke the SWI instruction [http://www.ethernut.de/en/documents/arm-inline-asm.html] -> asm(code : output operand list : input operand list : clobber list);

@@ -16,15 +16,25 @@
 
 #include "swi.h"
 #include "video.h"
+#include <stdint.h>
 
 unsigned int _kernel_swi_os_printchar( void )
 {
 
+	uintptr_t *regs_ptr;
+
+	regs_ptr = (uintptr_t *) swi_params_ptr_in;
+	_kernel_video_print_char( (char)(*regs_ptr+0) );
+
+	return 0;
+
+	/*
 	unsigned int *regs_ptr;
 
 	regs_ptr = (unsigned int *) swi_params_ptr_in;
 	_kernel_video_print_char( *(regs_ptr+0) );
 
 	return 0;
+	*/
 
 }

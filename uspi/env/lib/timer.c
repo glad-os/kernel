@@ -29,8 +29,8 @@
 #include "../../../uspi/env/include/uspienv/sysconfig.h"
 
 // ACU - Interrupt
-#include "../../../kernel/include/irq.h"
-#include "../../../kernel/include/define.h"
+#include "../../../kernel/c/common/include/irq.h"
+#include "../../../kernel/c/common/include/define.h"
 extern void put_word( unsigned int, unsigned int );
 extern unsigned int get_word( unsigned int );
 

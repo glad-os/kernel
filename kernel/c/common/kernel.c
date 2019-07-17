@@ -35,12 +35,12 @@ void _kernel_init( void )
 	// initialise the various subsystems
 	_kernel_interrupt_init();
 	_kernel_video_init();
-	// _kernel_keyboard_init();
 	_kernel_mmu_init();
+	_kernel_keyboard_init();
 	_kernel_emmc_init();
 	_kernel_systimer_init();
 	_kernel_fat32_init();
-	// _kernel_process_init();
+	_kernel_process_init();
 
 }
 
@@ -76,14 +76,11 @@ void _kernel_panic( char *subsystem, char *msg )
  */
 void _kernel_start_cli( void ) {
 
-	// [64-bit] for the moment, don't fire up CLI or invoke SWI calls etc.
-	/* 
 	struct _kernel_regs in,out;
 	char *appname = "CLI.BIN";
 
 	in.r[ 0 ] = (unsigned int) appname;
 	SWI( 0x0000000a, &in, &out );
-	*/
 
 	_kernel_video_print_string( "IMP OS has finished..." );
 

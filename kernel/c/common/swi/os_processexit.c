@@ -21,7 +21,7 @@ unsigned int _kernel_swi_os_processexit( void )
 {
 
 	/* during initial 64-bit development, exclude process related code from the build */
-	// _kernel_process_exit();
+	_kernel_process_exit();
 
     return 0;
 

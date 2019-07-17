@@ -39,24 +39,25 @@ swi_handler:
 							STR			sp			, saved_svc_sp_entrypoint
 							STR			lr			, swi_entrypoint_registers + 0xc
 
-							STMFD		sp!			, {r0-r12,lr}
+							STMFD			sp!			, {r0-r12,lr}
 
-							CPSIE 		i                                                   @ OS_ReadC in busy waiting stops interrupts! (consider re-entrant handler in future)
+							CPSIE 			i                                                   					@ OS_ReadC in busy waiting stops interrupts! (consider re-entrant handler in future)
 
 							ADR			r4			, swi_params_ptr_in						@ stack r0 as this points to the _kernel_regs struct (in)
 							STR			r0			, [r4]
-							ADR			r4			, swi_params_ptr_out					@ stack r1 as this points to the _kernel_regs struct (out)
+							ADR			r4			, swi_params_ptr_out						@ stack r1 as this points to the _kernel_regs struct (out)
 							STR			r1			, [r4]
 
-							LDR			r0			, [lr, #-4]								@ get SWI instruction and mask to determine SWI number
+							LDR			r0			, [lr, #-4]							@ get SWI instruction and mask to determine SWI number
 							BIC			r0			, r0		, #0xff<<24
-                            BL			_kernel_swi_handler
+                            				BL			_kernel_swi_handler
 
-						    LDMFD		sp!			, {r0-r12,pc}^							@ get SPSR and LR ready, then ERET (EL1->EL0)
+						    	LDMFD			sp!			, {r0-r12,pc}^							@ get SPSR and LR ready, then ERET (EL1->EL0)
 
 
 
-saved_svc_sp_entrypoint:	.word		0
-swi_entrypoint_registers:	.word		0, 0, 0, 0
-swi_params_ptr_in:			.word		0
-swi_params_ptr_out:			.word		0
+saved_svc_sp_entrypoint:				.word			0
+swi_entrypoint_registers:				.word			0, 0, 0, 0
+swi_params_ptr_in:					.word			0
+swi_params_ptr_out:					.word			0
+

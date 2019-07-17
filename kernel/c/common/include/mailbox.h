@@ -17,6 +17,7 @@
 
 
 #include "define.h"
+#include <stdint.h>
 
 
 

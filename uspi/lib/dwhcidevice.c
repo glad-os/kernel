@@ -30,8 +30,8 @@
 #include "../../uspi/include/uspios.h"
 
 // ACU - Interrupt
-#include "../../../kernel/include/irq.h"
-#include "../../../kernel/include/define.h"
+#include "../../../kernel/c/common/include/irq.h"
+#include "../../../kernel/c/common/include/define.h"
 
 #define ARM_IRQ_USB		9		// for ConnectInterrupt()
 

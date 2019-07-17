@@ -17,6 +17,7 @@
 
 
 #include "swi.h"
+#include <stdint.h>
 
 
 
@@ -34,8 +35,8 @@ swi_function handler[] =
 	_kernel_swi_os_printstring,
 	_kernel_swi_os_readvideovariables,
 	_kernel_swi_os_readc,
-    _kernel_swi_os_processbegin,
-    _kernel_swi_os_processexit
+	_kernel_swi_os_processbegin,
+	_kernel_swi_os_processexit
 };
 
 
@@ -49,6 +50,12 @@ swi_function handler[] =
  */
 unsigned int _kernel_swi_handler( unsigned int swi )
 {
+
+	// notify the screen of the SWI number invoked, as well as the value of in.r[0]
+	unsigned int *regs_ptr;
+	regs_ptr = (uintptr_t *) swi_params_ptr_in;
+	// _kernel_video_print_string( "_kernel_swi_handler : " ); _kernel_video_print_hex( swi         ); _kernel_video_print_string( "\n" );
+	// _kernel_video_print_string( "in.r[0] = 0x"           ); _kernel_video_print_hex( regs_ptr[0] ); _kernel_video_print_string( "\n" );	
 
 	// @todo the handler should return the result
 	handler[ swi ]();

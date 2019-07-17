@@ -117,7 +117,7 @@ KERNEL_FLAGS_A_32		= $(FLAGS_A_32) $(KERNEL_INCLUDES)
 KERNEL_FILES_A_64		= $(patsubst %.S,%.o,$(shell find kernel/asm/64-bit -type f -name '*.S'))
 KERNEL_FLAGS_A_64		= $(FLAGS_A_64) $(KERNEL_INCLUDES)
 
-kernel-32: $(KERNEL_FILES_A_32) $(KERNEL_FILES_C_COMMON) $(KERNEL_FILES_C_32) kernel-link
+kernel-32: uspi $(KERNEL_FILES_A_32) $(KERNEL_FILES_C_COMMON) $(KERNEL_FILES_C_32) kernel-link
 kernel-64: $(KERNEL_FILES_A_64) $(KERNEL_FILES_C_COMMON) $(KERNEL_FILES_C_64) kernel-link
 
 kernel-link:
@@ -127,10 +127,10 @@ kernel-link:
 			kernel/asm/$(ISA_TYPE)-bit/stdlib.o  \
 			kernel/asm/$(ISA_TYPE)-bit/irq.o     \
 			kernel/asm/$(ISA_TYPE)-bit/mmu.o     \
+			kernel/asm/$(ISA_TYPE)-bit/process.o \
 			$(KERNEL_FILES_C_COMMON) \
-			kernel/c/$(ISA_TYPE)-bit/*.o
-#			kernel/asm/$(ISA_TYPE)-bit/process.o \
-#			$(USPI_HOME)/lib/libuspi.a $(USPI_HOME)/env/lib/libuspienv.a
+			kernel/c/$(ISA_TYPE)-bit/*.o \
+			$(USPI_HOME)/lib/libuspi.a $(USPI_HOME)/env/lib/libuspienv.a
 
 	$(OBJCOPY) -I elf32-little -O binary --strip-debug --strip-unneeded --verbose kernel.elf kernel.bin 
 	$(OBJCOPY) kernel.elf -O ihex kernel.hex

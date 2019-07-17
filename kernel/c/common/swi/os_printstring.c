@@ -26,10 +26,10 @@
 unsigned int _kernel_swi_os_printstring( void )
 {
 
-	uintptr_t regs_ptr;
+	uintptr_t *regs_ptr;
 
-	regs_ptr = (uintptr_t) swi_params_ptr_in;
-	_kernel_video_print_string( (char *)(regs_ptr+0) );
+	regs_ptr = (uintptr_t *) swi_params_ptr_in;
+	_kernel_video_print_string( (char *)(*regs_ptr+0) );
 
 	return 0;
 

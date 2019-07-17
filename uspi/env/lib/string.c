@@ -18,7 +18,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "../../../kernel/include/stdlib.h"
+#include "../../../kernel/c/common/include/stdlib.h"
 
 #include "../../../uspi/env/include/uspienv/string.h"
 

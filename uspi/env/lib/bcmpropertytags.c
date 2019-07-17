@@ -25,8 +25,8 @@
 #include "../../../uspi/env/include/uspienv/sysconfig.h"
 #include "../../../uspi/env/include/uspienv/util.h"
 
-#include "../../../kernel/include/mailbox.h"
-#include "../../../kernel/include/stdlib.h"
+#include "../../../kernel/c/common/include/mailbox.h"
+#include "../../../kernel/c/common/include/stdlib.h"
 
 typedef struct TPropertyBuffer
 {

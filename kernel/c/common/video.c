@@ -415,7 +415,7 @@ void _kernel_video_print_string( char *string )
  * Displays the specified character.
  *
  */
-void _kernel_video_print_char( unsigned int c )
+void _kernel_video_print_char( char c )
 {
 
 	int loop_x , loop_y, colour;

@@ -19,7 +19,7 @@
 //
 #include "../../../uspi/env/include/uspienv.h"
 #include "../../../uspi/env/include/uspienv/sysconfig.h"
-#include "../../../kernel/include/irq.h"
+#include "../../../kernel/c/common/include/irq.h"
 
 static TUSPiEnv s_Env;
 

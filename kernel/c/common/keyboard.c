@@ -20,18 +20,18 @@
 #include "video.h"
 
 // [64-bit] exclude USPi from the build for the moment
-/*
-#include "../uspi/env/include/uspienv/util.h"
-#include "../uspi/env/include/uspienv.h"
-#include "../uspi/include/uspi.h"
-#include "../uspi/include/uspios.h"
-*/
+
+#include "../../../uspi/env/include/uspienv/util.h"
+#include "../../../uspi/env/include/uspienv.h"
+#include "../../../uspi/include/uspi.h"
+#include "../../../uspi/include/uspios.h"
+
 
 
 volatile char buffered = 0;
 
 // [64-bit] exclude KeyPressedHandler for the moment
-// static void KeyPressedHandler( const char *pString );
+static void KeyPressedHandler( const char *pString );
 
 
 
@@ -46,19 +46,22 @@ void _kernel_keyboard_init( void )
 {
 
 	// [64-bit] exclude USPi from the build for the moment
-	/*
+	
+	//_kernel_video_print_string( "Env Init...\n" );
 	if ( !USPiEnvInitialize() )
 	{
 		_kernel_video_print_string( "USB ENVIRONMENT FAIL\n" );
 		return;
 	}
 
+	//_kernel_video_print_string( "Init...\n" );
 	if ( !USPiInitialize() )
 	{
 		_kernel_video_print_string( "USB INITIALIZATION FAIL\n" );
 		return;
 	}
 
+	//_kernel_video_print_string( " Check...\n" );
 	if ( !USPiKeyboardAvailable() )
 	{
 		_kernel_video_print_string( "KEYBOARD FAIL\n" );
@@ -66,7 +69,7 @@ void _kernel_keyboard_init( void )
 	}
 
 	USPiKeyboardRegisterKeyPressedHandler( KeyPressedHandler );
-	*/
+	
 
 }
 
@@ -80,14 +83,14 @@ void _kernel_keyboard_init( void )
  *
  */
 // [64-bit] exclude KeyPressedHandler for the moment
-/*
+
 static void KeyPressedHandler( const char *pString )
 {
 
 	buffered = pString[ 0 ];
 
 }
-*/
+
 
 
 

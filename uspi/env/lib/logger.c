@@ -25,7 +25,7 @@
 #include "../../../uspi/env/include/uspienv/util.h"
 
 // ACU - Interrupt
-#include "../../../kernel/include/video.h"
+#include "../../../kernel/c/common/include/video.h"
 
 static TLogger *s_pThis = 0;
 

@@ -33,7 +33,7 @@
 	void 			_kernel_video_set_character_position			( unsigned int x, unsigned int y );
 	void 			_kernel_video_print_string				( char *string );
 	void 			_kernel_video_print_decimal				( unsigned int number );
-	void 			_kernel_video_print_char				( unsigned int c );
+	void 			_kernel_video_print_char				( char c );
 	void 			_kernel_video_plot_pixel				( unsigned int x, unsigned int y, unsigned int colour );
 	unsigned int		_kernel_video_get_pixel					( unsigned int x, unsigned int y );
 	unsigned int		_kernel_video_get_mode					( void );
