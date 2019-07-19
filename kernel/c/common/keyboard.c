@@ -45,7 +45,6 @@ static void KeyPressedHandler( const char *pString );
 void _kernel_keyboard_init( void )
 {
 
-	/*
 	if ( !USPiEnvInitialize() )
 	{
 		_kernel_video_print_string( "USB ENVIRONMENT FAIL\n" );
@@ -65,7 +64,6 @@ void _kernel_keyboard_init( void )
 	}
 
 	USPiKeyboardRegisterKeyPressedHandler( KeyPressedHandler );
-	*/
 
 }
 
