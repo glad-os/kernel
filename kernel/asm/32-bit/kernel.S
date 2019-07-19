@@ -86,14 +86,14 @@ first_svc_mode_instruction:
 							BL			_kernel_init
 
 switch_to_usr_mode:
-						    	MRS 			r1			, cpsr
-						    	BIC 			r1			, r1		, #0b00001111				// mask out existing mode -> transform SVC_MODE (3) to USR_MODE (0) [EL1->EL0]
-						    	MSR			spsr			, r1
-						    	LDR			lr			, usr_mode_ptr
-						    	ERET													// ERET: return from EL1->EL0; SPSR: USR_MODE; LR: first usr mode instruction
+						    	//MRS 			r1			, cpsr
+						    	//BIC 			r1			, r1		, #0b00001111				// mask out existing mode -> transform SVC_MODE (3) to USR_MODE (0) [EL1->EL0]
+						    	//MSR			spsr			, r1
+						    	//LDR			lr			, usr_mode_ptr
+						    	//ERET													// ERET: return from EL1->EL0; SPSR: USR_MODE; LR: first usr mode instruction
 
 first_usr_mode_instruction:
-						    	LDR 			sp			, _kernel_usr_stack_pointer
+						    	//LDR 			sp			, _kernel_usr_stack_pointer
 						    	BL			_kernel_start_cli
 infinite_loop:						B			infinite_loop
 

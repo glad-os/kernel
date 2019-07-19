@@ -16,7 +16,8 @@
 
 
 
-#include "kernel.h"
+#include <stdint.h>
+#include "swi.h"
 
 #include "irq.h"
 #include "video.h"
@@ -79,8 +80,12 @@ void _kernel_start_cli( void ) {
 	struct _kernel_regs in,out;
 	char *appname = "CLI.BIN";
 
-	in.r[ 0 ] = (unsigned int) appname;
-	SWI( 0x0000000a, &in, &out );
+	// no longer call SWI as this requires us to drop the kernel into userspace in order to SWI itself
+	// and from a memory management perspective, AArch64 mmu_init doesn't like this idea (can't have EL1 and EL0 R/W at the same time)
+	// so this code now needs to - as the kernel - fire it up directly from within the kernel context. SWIs are for userspace, not kernel space.
+	// in.r[ 0 ] = (uintptr_t) appname;
+	// SWI( 0x0000000a, &in, &out );
+	_kernel_process_begin( appname );
 
 	_kernel_video_print_string( "IMP OS has finished..." );
 

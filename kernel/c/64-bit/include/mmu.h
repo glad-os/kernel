@@ -100,6 +100,7 @@
 	void 			_kernel_mmu_enable( void );
 	void 			_kernel_mmu_disable( void );
 	unsigned int		_kernel_mmu_enabled( void );
+	void 			_kernel_mmu_map_process_in( unsigned int n, unsigned int cache, unsigned int buffer );
 
 
 

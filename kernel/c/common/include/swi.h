@@ -16,13 +16,22 @@
 
 
 
+#include <stdint.h>
+#include <swi_macro.h>
+
+
 #ifndef SWI_H
 #define SWI_H
 
 
 
+	// up to a maximum of 4 register values can be passed in/out of an SWI using this structure
+	struct _kernel_regs {
+		uintptr_t r[ 4 ];
+	};
+
 	// internal SWI handlers
-	unsigned int _kernel_swi_handler( unsigned int swi );
+	unsigned int _kernel_swi_handler( uintptr_t swi );
 
 	unsigned int _kernel_swi_os_setmode( void );
 	unsigned int _kernel_swi_os_setcolour( void );
@@ -34,8 +43,8 @@
 	unsigned int _kernel_swi_os_printstring( void );
 	unsigned int _kernel_swi_os_readvideovariables( void );
 	unsigned int _kernel_swi_os_readc( void );
-    unsigned int _kernel_swi_os_processbegin( void );
-    unsigned int _kernel_swi_os_processexit( void );
+    	unsigned int _kernel_swi_os_processbegin( void );
+    	unsigned int _kernel_swi_os_processexit( void );
 
 	extern unsigned int *swi_params_ptr_in;
 	extern unsigned int *swi_params_ptr_out;

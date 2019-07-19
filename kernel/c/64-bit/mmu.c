@@ -70,10 +70,6 @@ int mmu_enabled = 0;
  *
  * Initialises the MMU hardware.
  *
- * Uses the ARM MMU short-descriptor format translation tables, which offers a simpler approach
- * to virtual memory management; using Sections, memory is divided into 1MB blocks. this
- * requires only one level of translation table to achieve.
- *
  */
 void _kernel_mmu_init( void )
 {
@@ -184,4 +180,63 @@ unsigned int _kernel_mmu_enabled( void )
 	return mmu_enabled;
 
 }
+
+
+
+/**
+ *
+ * _kernel_mmu_map_va_section
+ *
+ * Maps an individal 1Mb section of virtual memory, to point to the required physical 1Mb of memory.
+ * Allows the cache and buffer bits to be recorded so the MMU can know whether this chunk can be cached and/or buffered.
+ *
+ */
+void _kernel_mmu_map_va_section( unsigned int va_section, unsigned int pa_section, int cache, int buffer ) {
+
+	uint64_t i, flags, va_index, pa_index;
+
+	va_index = ( va_section * MBYTE ) / ( 64 * KBYTE );
+	pa_index = ( pa_section * MBYTE ) / ( 64 * KBYTE );
+
+	for ( i = 0; i < 16; i++ ) {
+		// _kernel_video_print_string( "Mapping " ); _kernel_video_print_hex( va_index ); _kernel_video_print_string( " to " ); _kernel_video_print_hex( pa_index ); _kernel_video_print_string( "\n" );
+		// level 3 entries are page descriptors, pointing to the relevant 64Kb page
+		flags = MMU_PAGE_DESCRIPTOR_ACCESS_FLAG | MMU_PAGE_DESCRIPTOR_NON_SECURE | MMU_TRANS_ENTRY_LEVEL_3_PAGE;
+		flags |= MMU_PAGE_DESCRIPTOR_OUTER_SHAREABLE | 
+			 MMU_PAGE_DESCRIPTOR_ACCESS_EL1_RW_EL0_RW |
+			 MMU_PAGE_DESCRIPTOR_MAIR_3;
+		level_3_tables[ va_index ] = ( pa_index << 16 ) | flags ;
+		va_index++;
+		pa_index++;
+	}
+
+}
+
+
+
+/**
+ *
+ * _kernel_mmu_map_process_in
+ *
+ * Given a process #n, maps the 4MB-8MB region to point to the physical 4MB 'slot' that the process will have been installed into
+ * (e.g. process 0 => 4MB, 1 => 8MB, 2 => 12MB etc., so to map in process #1, VA 4MB-8MB => PA 8MB-12MB).
+ * Ensures caches are suitably invalidated as a result
+ *
+ */
+void _kernel_mmu_map_process_in( unsigned int n, unsigned int cache, unsigned int buffer ) {
+
+	unsigned int i, va_section, pa_section;
+
+	// set up memory
+	va_section = 4;
+	pa_section = 4 + (n * 4);
+	for ( i = 0; i < 4; i++ ) {
+		_kernel_mmu_map_va_section( va_section + i, pa_section + i, cache, buffer );
+	}
+
+	// MMU updated - clear tlb/btc
+	_kernel_mmu_clear_tlb_and_btc();
+
+}
+
 

@@ -48,11 +48,11 @@ swi_function handler[] =
  * Dispatches the relevant internal SWI function, based on the supplied SWI number.
  *
  */
-unsigned int _kernel_swi_handler( unsigned int swi )
+unsigned int _kernel_swi_handler( uintptr_t swi )
 {
 
 	// notify the screen of the SWI number invoked, as well as the value of in.r[0]
-	unsigned int *regs_ptr;
+	uintptr_t *regs_ptr;
 	regs_ptr = (uintptr_t *) swi_params_ptr_in;
 	// _kernel_video_print_string( "_kernel_swi_handler : " ); _kernel_video_print_hex( swi         ); _kernel_video_print_string( "\n" );
 	// _kernel_video_print_string( "in.r[0] = 0x"           ); _kernel_video_print_hex( regs_ptr[0] ); _kernel_video_print_string( "\n" );	

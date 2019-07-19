@@ -107,6 +107,7 @@ int _kernel_process_begin( char *filename ) {
 	proc[ slot ].parent = current;
 	_kernel_process_push_cpu_state( (unsigned int *) &proc[ slot ].state );
 
+
 	// update current, map memory in, install binary, start process
 	current = slot;
 	_kernel_mmu_map_process_in( slot, 0,0 );

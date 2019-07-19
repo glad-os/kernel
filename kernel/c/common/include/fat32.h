@@ -30,18 +30,6 @@
 	void _kernel_fat32_list_directory( void );
 	void _kernel_fat32_load_file( char *filename, unsigned char *dest );
 
-    // stdlib...
-
-    // up to a maximum of 4 register values can be passed in/out of an SWI using this structure
-	struct _kernel_regs {
-		uintptr_t r[ 4 ];
-	};
-
-	// macro to invoke the SWI instruction [http://www.ethernut.de/en/documents/arm-inline-asm.html] -> asm(code : output operand list : input operand list : clobber list);
-	// call SWI_INVOKE which allows SWI_ string constants to be expanded prior to then being injected into the SWI_GENERATE_ASM macro.
-	#define SWI( n,p_in,p_out ) SWI_GENERATE_ASM(n,p_in,p_out)
-	#define SWI_GENERATE_ASM( NR, PTR_IN, PTR_OUT ) __asm__ __volatile__ ( "MOV r0, %[in]\n\tMOV r1, %[out]\n\tSWI " #NR "\n\t" : : [in] "r" ( PTR_IN ), [out] "r" ( PTR_OUT ) );
-
 	#define		_KERNEL_FAT32_IDE_SECTOR_SIZE					512
 	#define		_KERNEL_FAT32_PARTITION_TABLE_OFFSET			446
 	#define		_KERNEL_FAT32_PARTITION_ENTRY_SIZE				16

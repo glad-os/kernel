@@ -109,22 +109,18 @@ svc_sp_value:						.word		saved_svc_sp_entrypoint
 							@ ?
 							@
 _kernel_process_start:
-							MRS         	r1          	, cpsr                                  @ switch to SYS mode (gain access to USR mode register bank)
+							// switch to SYS mode
+							MRS         	r1          	, cpsr
                             				BIC         	r1          	, r1        	, #0b00011111
                             				ORR         	r1          	, r1        	, #0b00011111
                             				MSR         	cpsr        	, r1
-							MOV         	sp          	, #8*1024*1024				@ prepare SP
+
+							// prepare stack pointer and link register
+							MOV         	sp          	, #8*1024*1024
 							SUB		sp		, sp		, #4
-
-							MRS         	r1          	, cpsr                                  @ switch to SVC mode
-                            				BIC         	r1          	, r1        	, #0b00011111
-                            				ORR         	r1          	, r1        	, #0b00010011
-                            				MSR         	cpsr        	, r1
-
-                            				// ERET will return from the SWI Exception and should now safely return to userland
-                            				// need to consider that we jump out of the kernel without 'undoing' unwanted stack work at this point
-							LDR 		r0		, svc_sp_value
-                            				LDR 		sp		, [r0]
 							MOV		lr		, #4*1024*1024
-                            				ERET
+
+							// return from Exception
+							ERET
+
 

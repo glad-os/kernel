@@ -113,6 +113,14 @@ el1_entry:
 							BL			_kernel_start_setup_stacks
 							BL 			_kernel_start_install_vector_table
 							BL			_kernel_init
+
+switch_to_el0:
+							//MOV			x0			, #0b00000						// DDI0487A, C5-300 (0 = AArch64, 0000 = EL0t)
+							//MSR			SPSR_EL1		, x0
+							//ADR			x0			, el0_entry
+							//MSR			ELR_EL1			, x0
+							//ERET
+//el0_entry:
 							BL			_kernel_start_cli
 infinite_loop:						B			infinite_loop
 
@@ -126,29 +134,28 @@ infinite_loop:						B			infinite_loop
 							// CurrentEL : ARM Architecture Reference Manual ARMv8 (DDI0487A) [C5-265]
 							//
 sync_handler:						
-							LDR			x0			, =sync_handler_message
-							BL			_kernel_video_print_string
-							MRS			x0			, PAR_EL1
-							BL			_kernel_video_print_hex
-sync_handler_hang:
-							B			sync_handler_hang
-							STP			x0			, x1		, [sp, #-16]!
-							STP			x2			, x3		, [sp, #-16]!
-							STP			x4			, x5		, [sp, #-16]!
-							STP			x6			, x7		, [sp, #-16]!
-							STP			x8			, x9		, [sp, #-16]!
-							STP			x10			, x11		, [sp, #-16]!
-							STP			x12			, x13		, [sp, #-16]!
-							STP			x14			, x15		, [sp, #-16]!
-							LDP			x14			, x15		, [sp]	, #16
-							LDP			x12			, x13		, [sp]	, #16
-							LDP			x10			, x11		, [sp]	, #16
-							LDP			x8			, x9		, [sp]	, #16
-							LDP			x6			, x7		, [sp]	, #16
-							LDP			x4			, x5		, [sp]	, #16
-							LDP			x2			, x3		, [sp]	, #16
-							LDP			x0			, x1		, [sp]	, #16
+							//LDR			x0			, =sync_handler_message
+							//BL			_kernel_video_print_string
+							//MRS			x0			, PAR_EL1
+
+							mrs    x25, esr_el1                     // read the syndrome register
+							lsr    x24, x25, #26      // exception class (top 6-bits identify the class of sync exception that occurred - quite a few to choose from)
+							cmp    x24, #0b010101           // SVC in 64-bit state
+							b.eq    el0_svc
+
+							// print out the ESR so we can check the syndrome result
+							mov x0, #0x00000dad			// just print "00000dad" to indicate a non-SVC sync error occurred
+							mrs x0, ESR_EL1
+							BL _kernel_video_print_hex
+loop1:							B loop1
+
+el0_svc:
+							
+							BL swi_handler // let's service it immediately
+loop2:							B loop2
 							ERET
+
+
 
 sync_handler_message:
 							.ascii			"<SYNC HANDLER>"

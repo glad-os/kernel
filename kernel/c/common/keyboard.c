@@ -45,23 +45,19 @@ static void KeyPressedHandler( const char *pString );
 void _kernel_keyboard_init( void )
 {
 
-	// [64-bit] exclude USPi from the build for the moment
-	
-	//_kernel_video_print_string( "Env Init...\n" );
+	/*
 	if ( !USPiEnvInitialize() )
 	{
 		_kernel_video_print_string( "USB ENVIRONMENT FAIL\n" );
 		return;
 	}
 
-	//_kernel_video_print_string( "Init...\n" );
 	if ( !USPiInitialize() )
 	{
 		_kernel_video_print_string( "USB INITIALIZATION FAIL\n" );
 		return;
 	}
 
-	//_kernel_video_print_string( " Check...\n" );
 	if ( !USPiKeyboardAvailable() )
 	{
 		_kernel_video_print_string( "KEYBOARD FAIL\n" );
@@ -69,7 +65,7 @@ void _kernel_keyboard_init( void )
 	}
 
 	USPiKeyboardRegisterKeyPressedHandler( KeyPressedHandler );
-	
+	*/
 
 }
 
