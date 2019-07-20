@@ -18,7 +18,6 @@
 
 .global 						_kernel_entry, _kernel_peek_value
 
-
 							//
 							// _kernel_entry
 							//
@@ -108,6 +107,7 @@ drop_from_el2_to_el1:
 							ERET
 
 el1_entry:
+							MSR SPSel,#1 // ACU - in EL1, please us SP_EL1 and don't start sharing SP_EL0
 							BL			_kernel_start_enable_fpu
 							BL			_kernel_start_clear_bss
 							BL			_kernel_start_setup_stacks
@@ -125,7 +125,8 @@ switch_to_el0:
 infinite_loop:						B			infinite_loop
 
 
-
+							// ------------------------------------------------------------------------------------------------------------------------------------------------
+							//
 							//
 							// sync handler - exceptions (SVC, etc.) are synchronous exceptions!
 							//
@@ -133,29 +134,128 @@ infinite_loop:						B			infinite_loop
 							//
 							// CurrentEL : ARM Architecture Reference Manual ARMv8 (DDI0487A) [C5-265]
 							//
-sync_handler:						
-							//LDR			x0			, =sync_handler_message
-							//BL			_kernel_video_print_string
-							//MRS			x0			, PAR_EL1
+							//
+							// ------------------------------------------------------------------------------------------------------------------------------------------------
 
-							mrs    x25, esr_el1                     // read the syndrome register
-							lsr    x24, x25, #26      // exception class (top 6-bits identify the class of sync exception that occurred - quite a few to choose from)
-							cmp    x24, #0b010101           // SVC in 64-bit state
+sync_handler:		
+							
+							sub	sp, sp, #256
+							stp	x0, x1, [sp, #16 * 0]
+							stp	x2, x3, [sp, #16 * 1]
+							stp	x4, x5, [sp, #16 * 2]
+							stp	x6, x7, [sp, #16 * 3]
+							stp	x8, x9, [sp, #16 * 4]
+							stp	x10, x11, [sp, #16 * 5]
+							stp	x12, x13, [sp, #16 * 6]
+							stp	x14, x15, [sp, #16 * 7]
+							stp	x16, x17, [sp, #16 * 8]
+							stp	x18, x19, [sp, #16 * 9]
+							stp	x20, x21, [sp, #16 * 10]
+							stp	x22, x23, [sp, #16 * 11]
+							stp	x24, x25, [sp, #16 * 12]
+							stp	x26, x27, [sp, #16 * 13]
+							stp	x28, x29, [sp, #16 * 14]
+							str	x30, [sp, #16 * 15] 
+
+							mrs    x0, esr_el1
+							lsr    x0, x0, #26      // exception class (top 6-bits identify the class of sync exception that occurred - quite a few to choose from)
+							cmp    x0, #0b010101           // SVC in 64-bit state
 							b.eq    el0_svc
 
-							// print out the ESR so we can check the syndrome result
-							mov x0, #0x00000dad			// just print "00000dad" to indicate a non-SVC sync error occurred
+							// print out the ELR so we can check where we theoretically came from
+							mov x0, #91
+							bl _kernel_video_print_char
 							mrs x0, ESR_EL1
 							BL _kernel_video_print_hex
-loop1:							B loop1
+							mov x0, #93
+							bl _kernel_video_print_char
+
+							mov x0, #91
+							bl _kernel_video_print_char
+							mrs x0, ELR_EL1
+							BL _kernel_video_print_hex
+							mov x0, #93
+							bl _kernel_video_print_char
+stick_around:						B stick_around
 
 el0_svc:
+							// on entry to swi_handler, x0/x1 contain the pointers to the in/out data structures for the swi
+							ldp x0, x1, [sp,#16*0]
+							BL swi_handler
+
+
+
+exit_sync_handler:
+							ldp	x0, x1, [sp, #16 * 0]
+							ldp	x2, x3, [sp, #16 * 1]
+							ldp	x4, x5, [sp, #16 * 2]
+							ldp	x6, x7, [sp, #16 * 3]
+							ldp	x8, x9, [sp, #16 * 4]
+							ldp	x10, x11, [sp, #16 * 5]
+							ldp	x12, x13, [sp, #16 * 6]
+							ldp	x14, x15, [sp, #16 * 7]
+							ldp	x16, x17, [sp, #16 * 8]
+							ldp	x18, x19, [sp, #16 * 9]
+							ldp	x20, x21, [sp, #16 * 10]
+							ldp	x22, x23, [sp, #16 * 11]
+							ldp	x24, x25, [sp, #16 * 12]
+							ldp	x26, x27, [sp, #16 * 13]
+							ldp	x28, x29, [sp, #16 * 14]
+							ldr	x30, [sp, #16 * 15] 
+							add	sp, sp, #256		
 							
-							BL swi_handler // let's service it immediately
-loop2:							B loop2
 							ERET
 
+							// ------------------------------------------------------------------------------------------------------------------------------------------------
+							//
+							//
+							// END OF SYNC HANDLER CODE
+							//
+							//
+							// ------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+the_irq_handler:
+							sub	sp, sp, #256
+							stp	x0, x1, [sp, #16 * 0]
+							stp	x2, x3, [sp, #16 * 1]
+							stp	x4, x5, [sp, #16 * 2]
+							stp	x6, x7, [sp, #16 * 3]
+							stp	x8, x9, [sp, #16 * 4]
+							stp	x10, x11, [sp, #16 * 5]
+							stp	x12, x13, [sp, #16 * 6]
+							stp	x14, x15, [sp, #16 * 7]
+							stp	x16, x17, [sp, #16 * 8]
+							stp	x18, x19, [sp, #16 * 9]
+							stp	x20, x21, [sp, #16 * 10]
+							stp	x22, x23, [sp, #16 * 11]
+							stp	x24, x25, [sp, #16 * 12]
+							stp	x26, x27, [sp, #16 * 13]
+							stp	x28, x29, [sp, #16 * 14]
+							str	x30, [sp, #16 * 15] 
+
+							BL _kernel_interrupt_handler
+
+							ldp	x0, x1, [sp, #16 * 0]
+							ldp	x2, x3, [sp, #16 * 1]
+							ldp	x4, x5, [sp, #16 * 2]
+							ldp	x6, x7, [sp, #16 * 3]
+							ldp	x8, x9, [sp, #16 * 4]
+							ldp	x10, x11, [sp, #16 * 5]
+							ldp	x12, x13, [sp, #16 * 6]
+							ldp	x14, x15, [sp, #16 * 7]
+							ldp	x16, x17, [sp, #16 * 8]
+							ldp	x18, x19, [sp, #16 * 9]
+							ldp	x20, x21, [sp, #16 * 10]
+							ldp	x22, x23, [sp, #16 * 11]
+							ldp	x24, x25, [sp, #16 * 12]
+							ldp	x26, x27, [sp, #16 * 13]
+							ldp	x28, x29, [sp, #16 * 14]
+							ldr	x30, [sp, #16 * 15] 
+							add	sp, sp, #256		
+
+							ERET
+							
 
 sync_handler_message:
 							.ascii			"<SYNC HANDLER>"
@@ -234,10 +334,10 @@ _kernel_start_setup_el1_stack:
 
 
 							.align			8
-_kernel_el1_stack_pointer:				.dword			_kernel_el1_stack + 4096 - 16
+_kernel_el1_stack_pointer:				.dword			_kernel_el1_stack + 4096
 
 							.balign			16
-_kernel_el1_stack:					.skip			4096
+_kernel_el1_stack:					.skip			8192
 
 
 
@@ -255,23 +355,23 @@ _kernel_start_install_vector_table:
 
 							.balign			2048
 vector_table:							
-							BL			sync_handler;	.balign 128		// Current EL with SP0
-							BL			irq_handler;	.balign 128
-							BL			fiq_handler;	.balign 128
-							BL			serror_handler;	.balign 128
+							B			sync_handler;	.balign 128		// Current EL with SP0
+							B			the_irq_handler;	.balign 128
+							B			fiq_handler;	.balign 128
+							B			serror_handler;	.balign 128
 
-							BL			sync_handler;	.balign 128		// Current EL with SPx
-							BL			irq_handler;	.balign 128
-							BL			fiq_handler;	.balign 128
-							BL			serror_handler;	.balign 128
+							B			sync_handler;	.balign 128		// Current EL with SPx
+							B			the_irq_handler;	.balign 128
+							B			fiq_handler;	.balign 128
+							B			serror_handler;	.balign 128
 
-							BL			sync_handler;	.balign 128		// From a lower EL (Aarch64)
-							BL			irq_handler;	.balign 128
-							BL			fiq_handler;	.balign 128
-							BL			serror_handler;	.balign 128
+							B			sync_handler;	.balign 128		// From a lower EL (Aarch64)
+							B			the_irq_handler;	.balign 128
+							B			fiq_handler;	.balign 128
+							B			serror_handler;	.balign 128
 
-							BL			sync_handler;	.balign 128		// From a lower EL (Aarch32)
-							BL			irq_handler;	.balign 128
-							BL			fiq_handler;	.balign 128
-							BL			serror_handler;	.balign 128
+							B			sync_handler;	.balign 128		// From a lower EL (Aarch32)
+							B			the_irq_handler;	.balign 128
+							B			fiq_handler;	.balign 128
+							B			serror_handler;	.balign 128
 

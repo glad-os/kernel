@@ -26,6 +26,8 @@
 #include "../../uspi/include/uspi.h"
 #include "../../uspi/include/uspios.h"
 
+#include "../../kernel/c/common/include/video.h"
+
 static const char FromUSPi[] = "uspi";
 
 static TUSPiLibrary *s_pLibrary = 0;
@@ -43,15 +45,24 @@ void _USPiInitialize( void )
 int USPiInitialize (void)
 {
 
+	_kernel_video_print_string( "USPiInitialize begins...\n" );
+
+	_kernel_video_print_string( "assert\n" );
 	assert (s_pLibrary == 0);
+
+	_kernel_video_print_string( "declare s_pLibrary\n" );
 	s_pLibrary = (TUSPiLibrary *) malloc (sizeof (TUSPiLibrary));
 	assert (s_pLibrary != 0);
 
+	_kernel_video_print_string( "DeviceNameService\n" );
 	DeviceNameService (&s_pLibrary->NameService);
+
+	_kernel_video_print_string( "DWHCIDevice\n" );
 	DWHCIDevice (&s_pLibrary->DWHCI);
 
 	s_pLibrary->pEth0 = 0;
 
+	_kernel_video_print_string( "DWHCIDeviceInitialize check\n" );
 	if (!DWHCIDeviceInitialize (&s_pLibrary->DWHCI))
 	{
 		LogWrite (FromUSPi, LOG_ERROR, "Cannot initialize USB host controller interface");
@@ -64,6 +75,7 @@ int USPiInitialize (void)
 		return 0;
 	}
 
+	_kernel_video_print_string( "DeviceNameServiceGetDevice\n" );
 	s_pLibrary->pUKBD1 = (TUSBKeyboardDevice *) DeviceNameServiceGetDevice (DeviceNameServiceGet (), "ukbd1", FALSE);
 
 	/*

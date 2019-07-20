@@ -20,6 +20,7 @@
 #ifndef _uspi_synchronize_h
 #define _uspi_synchronize_h
 
+#include <stdint.h>
 #include "../../../uspi/include/uspi/macros.h"
 #include "../../../uspi/include/uspi/types.h"
 
@@ -68,7 +69,7 @@ void uspi_CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength) MAXOPT;
 #define FlushBranchTargetCache()	\
 				__asm volatile ("mcr p15, 0, %0, c7, c5,  6" : : "r" (0) : "memory")
 
-void uspi_CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength) MAXOPT;
+void uspi_CleanAndInvalidateDataCacheRange (uintptr_t nAddress, u32 nLength) MAXOPT;
 
 //
 // Barriers

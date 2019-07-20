@@ -31,7 +31,7 @@
 	};
 
 	// internal SWI handlers
-	unsigned int _kernel_swi_handler( uintptr_t swi );
+	uintptr_t _kernel_swi_handler( uintptr_t swi );
 
 	unsigned int _kernel_swi_os_setmode( void );
 	unsigned int _kernel_swi_os_setcolour( void );

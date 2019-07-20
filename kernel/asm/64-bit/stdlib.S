@@ -46,8 +46,12 @@ get_word:
 							// x0 = 0
 							//
 delay_loop:
-							SUBS			x0			, x0		, #1
-							BHI			delay_loop
+							STR			lr			, [sp, #-16]!
+delay_loop2:
+							subs x0,x0,#1
+							b.ne			delay_loop2 // not bhi
+							LDR			lr			, [sp]		, #16
+
 							RET
 
 

@@ -88,12 +88,12 @@ _kernel_process_pop_cpu_state:
 _kernel_process_start:
 
 							// DDI0487A, C5-300 (0 = AArch64, 0000 = EL0t)
-							MOV			x0			, #0b00000 
+							MOV			x0			, #0b00000	// C5-295
 							MSR			SPSR_EL1		, x0
 
 							// prepare stack pointer and link register
 							MOV			x0			, #8*1024*1024				
-							SUB			x0			, x0		, #8
+							SUB			x0			, x0		, #16
 							MSR			SP_EL0			, x0
 							MOV			x0			, #4*1024*1024
 							MSR			ELR_EL1			, x0

@@ -31,7 +31,7 @@
 	// for AArch64 put the SVC number into X8 and try that for now
 	//
 	#define SWI( n,p_in,p_out ) SWI_GENERATE_ASM(n,p_in,p_out)
-	#define SWI_GENERATE_ASM( NR, PTR_IN, PTR_OUT ) __asm__ __volatile__ ( "MOV x0, %[in]\n\tMOV x1, %[out]\n\tMOV x8, #" #NR " \n\tSVC " #NR : : [in] "r" ( PTR_IN ), [out] "r" ( PTR_OUT ) );
+	#define SWI_GENERATE_ASM( NR, PTR_IN, PTR_OUT ) __asm__ __volatile__ ( "MOV x0, %[in]\n\tMOV x1, %[out]\n\tSVC " #NR : : [in] "r" ( PTR_IN ), [out] "r" ( PTR_OUT ) );
 
 
 

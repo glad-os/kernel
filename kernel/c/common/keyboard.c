@@ -45,6 +45,7 @@ static void KeyPressedHandler( const char *pString );
 void _kernel_keyboard_init( void )
 {
 
+	/*
 	_kernel_video_print_string( "USPiEnvInitialize\n" );
 	if ( !USPiEnvInitialize() )
 	{
@@ -67,6 +68,7 @@ void _kernel_keyboard_init( void )
 	}
 
 	USPiKeyboardRegisterKeyPressedHandler( KeyPressedHandler );
+	*/
 
 }
 

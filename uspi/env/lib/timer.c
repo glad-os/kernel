@@ -18,48 +18,45 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+
+
 #include <stdint.h>
-
 #include "../../../uspi/env/include/uspienv/timer.h"
-
 #include "../../../uspi/env/include/uspienv/alloc.h"
-//#include "../../../uspi/env/include/uspienv/assert.h"
 #include "../../../uspi/env/include/uspienv/bcm2835.h"
-//#include "../../../uspi/env/include/uspienv/debug.h"
 #include "../../../uspi/env/include/uspienv/logger.h"
-//#include "../../../uspi/env/include/uspienv/memio.h"
 #include "../../../uspi/env/include/uspienv/synchronize.h"
 #include "../../../uspi/env/include/uspienv/sysconfig.h"
-
-// ACU - Interrupt
 #include "../../../kernel/c/common/include/irq.h"
 #include "../../../kernel/c/common/include/define.h"
+
+
+
 extern void put_word( unsigned int, unsigned int );
 extern unsigned int get_word( unsigned int );
-
-
 extern void delay_loop (unsigned nCount);
 void TimerPollKernelTimers (TTimer *pThis);
 void TimerInterruptHandler (void *pParam);
 void TimerTuneMsDelay (TTimer *pThis);
 
+
+
 static TTimer *s_pThis = 0;
+
+
 
 void Timer (TTimer *pThis/*, TInterruptSystem *pInterruptSystem*/)
 {
-	//assert (pThis != 0);
 
-	// pThis->m_pInterruptSystem = pInterruptSystem;
 	pThis->m_nTicks = 0;
 	pThis->m_nTime = 0;
-#ifdef ARM_DISABLE_MMU
-	pThis->m_nMsDelay = 12500;
-#else
-	pThis->m_nMsDelay = 350000;
-#endif
+	#ifdef ARM_DISABLE_MMU
+		pThis->m_nMsDelay = 12500;
+	#else
+		pThis->m_nMsDelay = 350000;
+	#endif
 	pThis->m_nusDelay = pThis->m_nMsDelay / 1000;
 
-	//assert (s_pThis == 0);
 	s_pThis = pThis;
 
 	for (unsigned hTimer = 0; hTimer < KERNEL_TIMERS; hTimer++)
@@ -68,52 +65,48 @@ void Timer (TTimer *pThis/*, TInterruptSystem *pInterruptSystem*/)
 	}
 }
 
+
+
 void _Timer (TTimer *pThis)
 {
 	s_pThis = 0;
 }
 
+
+
 void timerreset(TTimer *pThis) {
+
 	_kernel_interrupt_register_irq_handler( INTERRUPT_IRQ_TIMER3, TimerInterruptHandler, pThis );
 	_kernel_interrupt_enable_irq( INTERRUPT_IRQ_TIMER3 );
 
 }
+
+
 
 boolean TimerInitialize (TTimer *pThis)
 {
 
-	// _kernel_video_print_string( "TimerInitialize -> begin\n" );
-
-	//assert (pThis != 0);
-
-	//assert (pThis->m_pInterruptSystem != 0);
-
 	// ACU - Interrupt
 	// InterruptSystemConnectIRQ (pThis->m_pInterruptSystem, ARM_IRQ_TIMER3, TimerInterruptHandler, pThis);
-	// _kernel_video_print_string( "TimerInitialize -> set interrupts\n" );
 	_kernel_interrupt_register_irq_handler( INTERRUPT_IRQ_TIMER3, TimerInterruptHandler, pThis );
 	_kernel_interrupt_enable_irq( INTERRUPT_IRQ_TIMER3 );
 
-	// _kernel_video_print_string( "TimerInitialize -> DataMemBarrier\n" );
 	DataMemBarrier ();
 
-	// _kernel_video_print_string( "TimerInitialize -> put_words \n" );
 	put_word (ARM_SYSTIMER_CLO, -(30 * CLOCKHZ));	// timer wraps soon, to check for problems
 	put_word (ARM_SYSTIMER_C3, get_word (ARM_SYSTIMER_CLO) + CLOCKHZ / HZ);
-	
-	// _kernel_video_print_string( "TimerInitialize -> TimerTuneMsDelay\n" );
 	TimerTuneMsDelay (pThis);
 
-	// _kernel_video_print_string( "TimerInitialize_t -> DataMemBarrier\n" );
 	DataMemBarrier ();
 
-	// _kernel_video_print_string( "TimerInitialize -> return\n" );
 	return TRUE;
+
 }
+
+
 
 unsigned TimerGetClockTicks (TTimer *pThis)
 {
-	//assert (pThis != 0);
 
 	DataMemBarrier ();
 
@@ -124,23 +117,28 @@ unsigned TimerGetClockTicks (TTimer *pThis)
 	return nResult;
 }
 
+
+
 unsigned TimerGetTicks (TTimer *pThis)
 {
-	//assert (pThis != 0);
 
 	return pThis->m_nTicks;
+
 }
+
+
 
 unsigned TimerGetTime (TTimer *pThis)
 {
-	//assert (pThis != 0);
 
 	return pThis->m_nTime;
+
 }
+
+
 
 TString *TimerGetTimeString (TTimer *pThis)
 {
-	//assert (pThis != 0);
 
 	EnterCritical ();
 
@@ -161,22 +159,23 @@ TString *TimerGetTimeString (TTimer *pThis)
 	unsigned nHours = nTime;
 
 	nTicks %= HZ;
-#if (HZ != 100)
-	nTicks = nTicks * 100 / HZ;
-#endif
+	#if (HZ != 100)
+		nTicks = nTicks * 100 / HZ;
+	#endif
 
 	TString *pString = malloc (sizeof (TString));
-	//assert (pString != 0);
 	String (pString);
 
 	StringFormat (pString, "%02u:%02u:%02u.%02lu", nHours, nMinute, nSecond, nTicks);
 
 	return pString;
+
 }
+
+
 
 unsigned TimerStartKernelTimer (TTimer *pThis, unsigned nDelay, TKernelTimerHandler *pHandler, void *pParam, void *pContext)
 {
-	//assert (pThis != 0);
 
 	EnterCritical ();
 
@@ -192,13 +191,9 @@ unsigned TimerStartKernelTimer (TTimer *pThis, unsigned nDelay, TKernelTimerHand
 	if (hTimer >= KERNEL_TIMERS)
 	{
 		LeaveCritical ();
-
-		// LoggerWrite (LoggerGet (), "timer", LogPanic, "System limit of kernel timers exceeded");
-
 		return 0;
 	}
 
-	//assert (pHandler != 0);
 	pThis->m_KernelTimer[hTimer].m_pHandler    = pHandler;
 	pThis->m_KernelTimer[hTimer].m_nElapsesAt  = pThis->m_nTicks+nDelay;
 	pThis->m_KernelTimer[hTimer].m_pParam      = pParam;
@@ -207,34 +202,35 @@ unsigned TimerStartKernelTimer (TTimer *pThis, unsigned nDelay, TKernelTimerHand
 	LeaveCritical ();
 
 	return hTimer+1;
+
 }
+
+
 
 void TimerCancelKernelTimer (TTimer *pThis, unsigned hTimer)
 {
-	//assert (pThis != 0);
 
-	//assert (1 <= hTimer && hTimer <= KERNEL_TIMERS);
 	pThis->m_KernelTimer[hTimer-1].m_pHandler = 0;
+
 }
+
+
 
 void TimerMsDelay (TTimer *pThis, unsigned nMilliSeconds)
 {
-	//assert (pThis != 0);
 
 	if (nMilliSeconds > 0)
 	{
 		uintptr_t nCycles =  pThis->m_nMsDelay * nMilliSeconds;
-		//_kernel_video_print_hex(nCycles); _kernel_video_print_string("\n");
-
 		delay_loop (nCycles);
 	}
-	//_kernel_video_print_string( "TimerMsDelay return\n" );
 
 }
 
+
+
 void TimerusDelay (TTimer *pThis, unsigned nMicroSeconds)
 {
-	//assert (pThis != 0);
 
 	if (nMicroSeconds > 0)
 	{
@@ -242,24 +238,35 @@ void TimerusDelay (TTimer *pThis, unsigned nMicroSeconds)
 
 		delay_loop (nCycles);
 	}
+
 }
+
+
 
 TTimer *TimerGet (void)
 {
-	//assert (s_pThis != 0);
+
 	return s_pThis;
+
 }
+
+
 
 void TimerSimpleMsDelay (unsigned nMilliSeconds)
 {
+
 	if (nMilliSeconds > 0)
 	{
 		TimerSimpleusDelay (nMilliSeconds * 1000);
 	}
+
 }
+
+
 
 void TimerSimpleusDelay (unsigned nMicroSeconds)
 {
+
 	if (nMicroSeconds > 0)
 	{
 		unsigned nTicks = nMicroSeconds * (CLOCKHZ / 1000000);
@@ -274,11 +281,13 @@ void TimerSimpleusDelay (unsigned nMicroSeconds)
 
 		DataMemBarrier ();
 	}
+
 }
+
+
 
 void TimerPollKernelTimers (TTimer *pThis)
 {
-	//assert (pThis != 0);
 
 	EnterCritical ();
 
@@ -299,18 +308,18 @@ void TimerPollKernelTimers (TTimer *pThis)
 	}
 
 	LeaveCritical ();
+
 }
+
+
 
 void TimerInterruptHandler (void *pParam)
 {
 
 	TTimer *pThis = (TTimer *) pParam;
-	//assert (pThis != 0);
 
 	DataMemBarrier ();
 
-	//assert (read32 (ARM_SYSTIMER_CS) & (1 << 3));
-	
 	u32 nCompare = get_word (ARM_SYSTIMER_C3) + CLOCKHZ / HZ;
 	put_word (ARM_SYSTIMER_C3, nCompare);
 	if (nCompare < get_word (ARM_SYSTIMER_CLO))			// time may drift
@@ -332,23 +341,19 @@ void TimerInterruptHandler (void *pParam)
 
 }
 
+
+
 void TimerTuneMsDelay (TTimer *pThis)
 {
 
-	//assert (pThis != 0);
-
-	// ACU this is where it's hanging - nTicks = 1, then call to TimerMsDelay just hangs forever?
 	unsigned nTicks = TimerGetTicks (pThis);
 	TimerMsDelay (pThis, 1000);
 	nTicks = TimerGetTicks (pThis) - nTicks;
-	//_kernel_video_print_string( " - " );
-	//_kernel_video_print_hex( nTicks );
-	//_kernel_video_print_string( "\n" );
 
 	unsigned nFactor = 100 * HZ / nTicks;
 
 	pThis->m_nMsDelay = pThis->m_nMsDelay * nFactor / 100;
 	pThis->m_nusDelay = (pThis->m_nMsDelay + 500) / 1000;
 
-	//LoggerWrite (LoggerGet (), "timer", LogNotice, "SpeedFactor is %u.%02u", nFactor / 100, nFactor % 100);
 }
+

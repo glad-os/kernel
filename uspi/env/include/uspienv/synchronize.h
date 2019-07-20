@@ -17,9 +17,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+
 #ifndef _synchronize_h
 #define _synchronize_h
 
+#include <stdint.h>
 #include "../../../../uspi/env/include/uspienv/macros.h"
 #include "../../../../uspi/env/include/uspienv/types.h"
 
@@ -32,11 +34,11 @@ extern "C" {
 //
 // ACU
 // 64-bit
-//#define	EnableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x7")
-//#define	DisableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x0")
+#define	EnableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x7")
+#define	DisableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x0")
 // 32-bit
-#define	EnableInterrupts()	__asm volatile ("cpsie i")
-#define	DisableInterrupts()	__asm volatile ("cpsid i")
+//#define	EnableInterrupts()	__asm volatile ("cpsie i")
+//#define	DisableInterrupts()	__asm volatile ("cpsid i")
 
 void EnterCritical (void);
 void LeaveCritical (void);
@@ -79,7 +81,7 @@ void CleanDataCache (void) MAXOPT;
 
 void InvalidateDataCacheRange (u32 nAddress, u32 nLength) MAXOPT;
 void CleanDataCacheRange (u32 nAddress, u32 nLength) MAXOPT;
-void CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength) MAXOPT;
+void CleanAndInvalidateDataCacheRange (uintptr_t nAddress, u32 nLength) MAXOPT;
 
 //
 // Barriers

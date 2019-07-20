@@ -23,41 +23,20 @@
 
 
 swi_handler:
-						// 32-bit version:
-						/*
-						STR			r11			, swi_entrypoint_registers + 0x0
-						STR			r12			, swi_entrypoint_registers + 0x4
-						STR			sp			, saved_svc_sp_entrypoint
-						STR			lr			, swi_entrypoint_registers + 0xc
 
-						STMFD			sp!			, {r0-r12,lr}
-
-						CPSIE 			i                                                   					@ OS_ReadC in busy waiting stops interrupts! (consider re-entrant handler in future)
-
-						ADR			r4			, swi_params_ptr_in						@ stack r0 as this points to the _kernel_regs struct (in)
-						STR			r0			, [r4]
-						ADR			r4			, swi_params_ptr_out						@ stack r1 as this points to the _kernel_regs struct (out)
-						STR			r1			, [r4]
-
-						LDR			r0			, [lr, #-4]							@ get SWI instruction and mask to determine SWI number
-						BIC			r0			, r0		, #0xff<<24
-                            			BL			_kernel_swi_handler
-
-					    	LDMFD			sp!			, {r0-r12,pc}^							@ get SPSR and LR ready, then ERET (EL1->EL0)
-						*/
-
-						STR			lr			, [sp, #-16]!
-						
+						STR lr, [sp,#-8]!
 						ADR			x4			, swi_params_ptr_in
 						STR			x0			, [x4]
 						ADR			x4			, swi_params_ptr_out
 						STR			x1			, [x4]
 
+						// take the SVC code from the ESR (Exception Syndrome Register) and pass it in to _kernel_swi_handler
 						MRS			x0			, ESR_EL1
 						AND			x0			, x0		, #0xffff
 						BL			_kernel_swi_handler
 
-						LDR			lr			, [sp]		, #16
+finish_swi_handler:
+						LDR lr, [sp],#8
 						RET
 
 						

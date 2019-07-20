@@ -26,11 +26,11 @@
 
 // ACU
 // 64-bit
-//#define	EnableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x7")
-//#define	DisableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x0")
+#define	EnableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x7")
+#define	DisableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x0")
 // 32-bit
-#define	EnableInterrupts()	__asm volatile ("cpsie i")
-#define	DisableInterrupts()	__asm volatile ("cpsid i")
+//#define	EnableInterrupts()	__asm volatile ("cpsie i")
+//#define	DisableInterrupts()	__asm volatile ("cpsid i")
 extern void			_kernel_mmu_clean_and_invalidate_cache_va( uintptr_t va );
 static volatile unsigned s_nCriticalLevel = 0;
 static volatile boolean s_bWereEnabled;
@@ -38,12 +38,10 @@ static volatile boolean s_bWereEnabled;
 void uspi_EnterCritical (void)
 {
 
-	// ACU
-	return;
-
-	/*
+	// ACU - 32/64
 	u32 nFlags;
-	asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
+	//__asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
+	  __asm volatile ("mrs %0, daif" : "=r" (nFlags));
 
 	DisableInterrupts ();
 
@@ -53,7 +51,6 @@ void uspi_EnterCritical (void)
 	}
 
 	DataMemBarrier ();
-	*/
 
 }
 
@@ -61,12 +58,9 @@ void uspi_LeaveCritical (void)
 {
 
 	// ACU
-	return;
 
-	/*
 	DataMemBarrier ();
 
-	assert (s_nCriticalLevel > 0);
 	if (--s_nCriticalLevel == 0)
 	{
 		if (s_bWereEnabled)
@@ -74,10 +68,8 @@ void uspi_LeaveCritical (void)
 			EnableInterrupts ();
 		}
 	}
-	*/
 
 }
-
 #if RASPPI == 1
 
 //
@@ -136,7 +128,7 @@ void uspi_CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength)
 #define L2_CACHE_LINE_LENGTH		64
 #define DATA_CACHE_LINE_LENGTH_MIN	64		// min(L1_DATA_CACHE_LINE_LENGTH, L2_CACHE_LINE_LENGTH)
 
-void uspi_CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength)
+void uspi_CleanAndInvalidateDataCacheRange (uintptr_t nAddress, u32 nLength)
 {
 
 	// ACU

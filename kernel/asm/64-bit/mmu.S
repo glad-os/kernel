@@ -25,6 +25,7 @@
 .global							_kernel_mmu_configure_disable
 .global							_kernel_mmu_invalidate_tlb
 .global							_kernel_mmu_invalidate_btc
+.global							_kernel_mmu_clean_and_invalidate_cache_va
 
 
 
@@ -239,5 +240,16 @@ _kernel_mmu_invalidate_btc:
 							RET
 
 
+
+							//
+							// On entry:
+							// x0 = virtual address
+							//
+							// Ref: ARM DDI 0487A.f [C5-318] "DC CIVAC, Data or unified Cache line Clean and Invalidate by VA to PoC"
+							//
+_kernel_mmu_clean_and_invalidate_cache_va:
+
+							DC CIVAC, x0	// [C5-318]
+							RET
 
 

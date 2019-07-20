@@ -17,6 +17,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+#include <stdint.h>
 #include "../../../uspi/env/include/uspienv/synchronize.h"
 
 //#include "../../../uspi/env/include/uspienv/assert.h"
@@ -28,12 +29,10 @@ static volatile boolean s_bWereEnabled;
 void EnterCritical (void)
 {
 
-	// ACU
-	return;
-
-	/*
+	// ACU - 32/64
 	u32 nFlags;
-	__asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
+	//__asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
+	  __asm volatile ("mrs %0, daif" : "=r" (nFlags));
 
 	DisableInterrupts ();
 
@@ -43,7 +42,6 @@ void EnterCritical (void)
 	}
 
 	DataMemBarrier ();
-	*/
 
 }
 
@@ -51,12 +49,9 @@ void LeaveCritical (void)
 {
 
 	// ACU
-	return;
 
-	/*
 	DataMemBarrier ();
 
-	//assert (s_nCriticalLevel > 0);
 	if (--s_nCriticalLevel == 0)
 	{
 		if (s_bWereEnabled)
@@ -64,7 +59,6 @@ void LeaveCritical (void)
 			EnableInterrupts ();
 		}
 	}
-	*/
 
 }
 
@@ -222,7 +216,7 @@ void CleanDataCacheRange (u32 nAddress, u32 nLength)
 
 }
 
-void CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength)
+void CleanAndInvalidateDataCacheRange (uintptr_t nAddress, u32 nLength)
 {
 
 	// ACU

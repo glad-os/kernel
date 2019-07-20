@@ -23,16 +23,29 @@
 #include "../../uspi/include/uspi/util.h"
 #include "../../uspi/include/uspios.h"
 
+#include "../../kernel/c/common/include/video.h"
+
 static TDeviceNameService *s_pThis = 0;
 
 void DeviceNameService (TDeviceNameService *pThis)
 {
+
+	_kernel_video_print_string( "DeviceNameService start\n" );
+
+	_kernel_video_print_string( "assert\n" );
 	assert (pThis != 0);
 
+	_kernel_video_print_string( "set m_pList\n" );
 	pThis->m_pList = 0;
 
+	_kernel_video_print_string( "assert\n" );
 	assert (s_pThis == 0);
+
+	_kernel_video_print_string( "set s_pThis\n" );
 	s_pThis = pThis;
+
+	_kernel_video_print_string( "DeviceNameService finish\n" );
+
 }
 
 void _DeviceNameService (TDeviceNameService *pThis)
