@@ -17,6 +17,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+
+#include <stdint.h>
+
 #include "../../../uspi/env/include/uspienv/timer.h"
 
 #include "../../../uspi/env/include/uspienv/alloc.h"
@@ -78,25 +81,33 @@ void timerreset(TTimer *pThis) {
 
 boolean TimerInitialize (TTimer *pThis)
 {
+
+	// _kernel_video_print_string( "TimerInitialize -> begin\n" );
+
 	//assert (pThis != 0);
 
 	//assert (pThis->m_pInterruptSystem != 0);
 
 	// ACU - Interrupt
 	// InterruptSystemConnectIRQ (pThis->m_pInterruptSystem, ARM_IRQ_TIMER3, TimerInterruptHandler, pThis);
+	// _kernel_video_print_string( "TimerInitialize -> set interrupts\n" );
 	_kernel_interrupt_register_irq_handler( INTERRUPT_IRQ_TIMER3, TimerInterruptHandler, pThis );
 	_kernel_interrupt_enable_irq( INTERRUPT_IRQ_TIMER3 );
 
+	// _kernel_video_print_string( "TimerInitialize -> DataMemBarrier\n" );
 	DataMemBarrier ();
 
+	// _kernel_video_print_string( "TimerInitialize -> put_words \n" );
 	put_word (ARM_SYSTIMER_CLO, -(30 * CLOCKHZ));	// timer wraps soon, to check for problems
-
 	put_word (ARM_SYSTIMER_C3, get_word (ARM_SYSTIMER_CLO) + CLOCKHZ / HZ);
 	
+	// _kernel_video_print_string( "TimerInitialize -> TimerTuneMsDelay\n" );
 	TimerTuneMsDelay (pThis);
 
+	// _kernel_video_print_string( "TimerInitialize_t -> DataMemBarrier\n" );
 	DataMemBarrier ();
 
+	// _kernel_video_print_string( "TimerInitialize -> return\n" );
 	return TRUE;
 }
 
@@ -210,14 +221,15 @@ void TimerMsDelay (TTimer *pThis, unsigned nMilliSeconds)
 {
 	//assert (pThis != 0);
 
-	// video_print("[TimerMsDelay : "); video_print_hex( nMilliSeconds ); video_print(" * " );
 	if (nMilliSeconds > 0)
 	{
-		unsigned nCycles =  pThis->m_nMsDelay * nMilliSeconds;
-		// video_print_hex(pThis->m_nMsDelay); video_print(" => ");
-		// video_print_hex(nCycles); video_print("]\n");
+		uintptr_t nCycles =  pThis->m_nMsDelay * nMilliSeconds;
+		//_kernel_video_print_hex(nCycles); _kernel_video_print_string("\n");
+
 		delay_loop (nCycles);
 	}
+	//_kernel_video_print_string( "TimerMsDelay return\n" );
+
 }
 
 void TimerusDelay (TTimer *pThis, unsigned nMicroSeconds)
@@ -325,14 +337,18 @@ void TimerTuneMsDelay (TTimer *pThis)
 
 	//assert (pThis != 0);
 
+	// ACU this is where it's hanging - nTicks = 1, then call to TimerMsDelay just hangs forever?
 	unsigned nTicks = TimerGetTicks (pThis);
 	TimerMsDelay (pThis, 1000);
 	nTicks = TimerGetTicks (pThis) - nTicks;
+	//_kernel_video_print_string( " - " );
+	//_kernel_video_print_hex( nTicks );
+	//_kernel_video_print_string( "\n" );
 
 	unsigned nFactor = 100 * HZ / nTicks;
 
 	pThis->m_nMsDelay = pThis->m_nMsDelay * nFactor / 100;
 	pThis->m_nusDelay = (pThis->m_nMsDelay + 500) / 1000;
 
-	LoggerWrite (LoggerGet (), "timer", LogNotice, "SpeedFactor is %u.%02u", nFactor / 100, nFactor % 100);
+	//LoggerWrite (LoggerGet (), "timer", LogNotice, "SpeedFactor is %u.%02u", nFactor / 100, nFactor % 100);
 }

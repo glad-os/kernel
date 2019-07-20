@@ -74,7 +74,7 @@ void uspi_CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength) MAXOPT;
 // Barriers
 //
 #define DataSyncBarrier()	__asm volatile ("dsb" ::: "memory")
-#define DataMemBarrier() 	__asm volatile ("dmb" ::: "memory")
+#define DataMemBarrier() 	__asm volatile ("dmb SY" ::: "memory")
 
 #define InstructionSyncBarrier() __asm volatile ("isb" ::: "memory")
 #define InstructionMemBarrier()	__asm volatile ("isb" ::: "memory")

@@ -17,19 +17,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+
+#include <stdint.h>
 #include "../../uspi/include/uspi/synchronize.h"
 
 #include "../../uspi/include/uspi/assert.h"
 #include "../../uspi/include/uspi/types.h"
 
+// ACU
+// 64-bit
+//#define	EnableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x7")
+//#define	DisableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x0")
+// 32-bit
 #define	EnableInterrupts()	__asm volatile ("cpsie i")
 #define	DisableInterrupts()	__asm volatile ("cpsid i")
-
+extern void			_kernel_mmu_clean_and_invalidate_cache_va( uintptr_t va );
 static volatile unsigned s_nCriticalLevel = 0;
 static volatile boolean s_bWereEnabled;
 
 void uspi_EnterCritical (void)
 {
+
+	// ACU
+	return;
+
+	/*
 	u32 nFlags;
 	asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
 
@@ -41,10 +53,17 @@ void uspi_EnterCritical (void)
 	}
 
 	DataMemBarrier ();
+	*/
+
 }
 
 void uspi_LeaveCritical (void)
 {
+
+	// ACU
+	return;
+
+	/*
 	DataMemBarrier ();
 
 	assert (s_nCriticalLevel > 0);
@@ -55,6 +74,8 @@ void uspi_LeaveCritical (void)
 			EnableInterrupts ();
 		}
 	}
+	*/
+
 }
 
 #if RASPPI == 1
@@ -73,6 +94,11 @@ void uspi_LeaveCritical (void)
 
 void uspi_CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength)
 {
+
+	// ACU
+	return;
+
+	/*
 	nLength += DATA_CACHE_LINE_LENGTH;
 
 	while (1)
@@ -87,6 +113,8 @@ void uspi_CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength)
 		nAddress += DATA_CACHE_LINE_LENGTH;
 		nLength  -= DATA_CACHE_LINE_LENGTH;
 	}
+	*/
+
 }
 
 #else
@@ -110,11 +138,17 @@ void uspi_CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength)
 
 void uspi_CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength)
 {
+
+	// ACU
+
 	nLength += DATA_CACHE_LINE_LENGTH_MIN;
 
 	while (1)
 	{
-		__asm volatile ("mcr p15, 0, %0, c7, c14,  1" : : "r" (nAddress) : "memory");	// DCCIMVAC
+
+		// call kernel's one
+		_kernel_mmu_clean_and_invalidate_cache_va( nAddress );
+		// __asm volatile ("mcr p15, 0, %0, c7, c14,  1" : : "r" (nAddress) : "memory");	// DCCIMVAC
 
 		if (nLength < DATA_CACHE_LINE_LENGTH_MIN)
 		{
@@ -124,6 +158,7 @@ void uspi_CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength)
 		nAddress += DATA_CACHE_LINE_LENGTH_MIN;
 		nLength  -= DATA_CACHE_LINE_LENGTH_MIN;
 	}
+
 }
 
 #endif

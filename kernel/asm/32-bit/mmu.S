@@ -29,6 +29,7 @@
 .global							_kernel_mmu_invalidate_i_cache
 .global							_kernel_mmu_clean_l1_d_cache
 .global							_kernel_mmu_clean_l2_d_cache
+.global							_kernel_mmu_clean_and_invalidate_cache_va
 
 
 
@@ -237,7 +238,7 @@ l1_set_loop:
 							ADD			r2			, r2		, r0	, LSL #30
 							ADD			r2			, r2		, r1	, LSL # 6
 							ADD			r2			, r2		, #(0<<1)					@ indicates L1 cache
-							MCR			p15			, 0		, r2	, c7, c14 ,2				@ DCCISW operation
+							MCR			p15			, 0		, r2	, c7, c14 ,1				@ DCCISW operation
 
 							ADD			r1			, r1		, #1
 							CMP			r1			, #64
@@ -283,7 +284,7 @@ l2_set_loop:
 							ADD			r2			, r2		, r0, LSL #28
 							ADD			r2			, r2		, r1, LSL # 6
 							ADD			r2			, r2		, #(1<<1) 					@ indicates L2 cache
-							MCR			p15			, 0		, r2	, c7, c14 ,2				@ DCCISW operation
+							MCR			p15			, 0		, r2	, c7, c14 ,1				@ DCCISW operation
 
 							ADD			r1			, r1		, #1
 							CMP			r1			, #1024
@@ -295,4 +296,19 @@ l2_set_loop:
 							DSB
 							ISB
 							MOV			PC, lr
+
+
+
+							//
+							// On entry:
+							// r0 = virtual address
+							//
+_kernel_mmu_clean_and_invalidate_cache_va:
+							MCR			p15			, 0		, r0	, c7, c14 ,1				@ DCCISW operation
+							
+							DSB
+							ISB
+							MOV			PC, lr
+
+
 

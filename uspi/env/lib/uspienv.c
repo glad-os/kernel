@@ -26,17 +26,23 @@ static TUSPiEnv s_Env;
 int USPiEnvInitialize (void)
 {
 
+	//_kernel_video_print_string( "USPiEnvInitialize -> MemorySystem\n" );
 	MemorySystem (&s_Env.m_Memory, TRUE);
+	//_kernel_video_print_string( "USPiEnvInitialize -> Timer\n" );
 	Timer (&s_Env.m_Timer);
+	//_kernel_video_print_string( "USPiEnvInitialize -> Logger\n" );
 	Logger (&s_Env.m_Logger, LogDebug, &s_Env.m_Timer);
 
+	//_kernel_video_print_string( "USPiEnvInitialize -> check\n" );
 	if ( !TimerInitialize (&s_Env.m_Timer) )
 	{
+		//_kernel_video_print_string( "USPiEnvInitialize -> timer fail\n" );
 		_Logger (&s_Env.m_Logger);
 		_Timer (&s_Env.m_Timer);
 		return 0;
 	}
 
+	//_kernel_video_print_string( "USPiEnvInitialize -> return\n" );
 	return 1;
 }
 

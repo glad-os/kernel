@@ -27,6 +27,11 @@ static volatile boolean s_bWereEnabled;
 
 void EnterCritical (void)
 {
+
+	// ACU
+	return;
+
+	/*
 	u32 nFlags;
 	__asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
 
@@ -38,10 +43,17 @@ void EnterCritical (void)
 	}
 
 	DataMemBarrier ();
+	*/
+
 }
 
 void LeaveCritical (void)
 {
+
+	// ACU
+	return;
+
+	/*
 	DataMemBarrier ();
 
 	//assert (s_nCriticalLevel > 0);
@@ -52,6 +64,8 @@ void LeaveCritical (void)
 			EnableInterrupts ();
 		}
 	}
+	*/
+
 }
 
 #if RASPPI != 1
@@ -88,6 +102,11 @@ void LeaveCritical (void)
 
 void InvalidateDataCache (void)
 {
+
+	// ACU
+	return;
+
+	/*
 	// invalidate L1 data cache
 	for (register unsigned nSet = 0; nSet < L1_DATA_CACHE_SETS; nSet++)
 	{
@@ -113,10 +132,17 @@ void InvalidateDataCache (void)
 			__asm volatile ("mcr p15, 0, %0, c7, c6,  2" : : "r" (nSetWayLevel) : "memory");	// DCISW
 		}
 	}
+	*/
+
 }
 
 void CleanDataCache (void)
 {
+
+	// ACU
+	return;
+
+	/*
 	// clean L1 data cache
 	for (register unsigned nSet = 0; nSet < L1_DATA_CACHE_SETS; nSet++)
 	{
@@ -142,10 +168,17 @@ void CleanDataCache (void)
 			__asm volatile ("mcr p15, 0, %0, c7, c10,  2" : : "r" (nSetWayLevel) : "memory");	// DCCSW
 		}
 	}
+	*/
+
 }
 
 void InvalidateDataCacheRange (u32 nAddress, u32 nLength)
 {
+
+	// ACU
+	return;
+
+	/*
 	nLength += DATA_CACHE_LINE_LENGTH_MIN;
 
 	while (1)
@@ -160,10 +193,17 @@ void InvalidateDataCacheRange (u32 nAddress, u32 nLength)
 		nAddress += DATA_CACHE_LINE_LENGTH_MIN;
 		nLength  -= DATA_CACHE_LINE_LENGTH_MIN;
 	}
+	*/
+
 }
 
 void CleanDataCacheRange (u32 nAddress, u32 nLength)
 {
+
+	// ACU
+	return;
+
+	/*
 	nLength += DATA_CACHE_LINE_LENGTH_MIN;
 
 	while (1)
@@ -178,10 +218,17 @@ void CleanDataCacheRange (u32 nAddress, u32 nLength)
 		nAddress += DATA_CACHE_LINE_LENGTH_MIN;
 		nLength  -= DATA_CACHE_LINE_LENGTH_MIN;
 	}
+	*/
+
 }
 
 void CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength)
 {
+
+	// ACU
+	return;
+
+	/*
 	nLength += DATA_CACHE_LINE_LENGTH_MIN;
 
 	while (1)
@@ -196,6 +243,8 @@ void CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength)
 		nAddress += DATA_CACHE_LINE_LENGTH_MIN;
 		nLength  -= DATA_CACHE_LINE_LENGTH_MIN;
 	}
+	*/
+
 }
 
 #endif

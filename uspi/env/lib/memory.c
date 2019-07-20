@@ -75,6 +75,9 @@ void MemorySystem (TMemorySystem *pThis, boolean bEnableMMU)
 void _MemorySystem (TMemorySystem *pThis)
 {
 
+	// ACU
+		
+	/*
 	if (pThis->m_bEnableMMU)
 	{
 		// disable MMU
@@ -86,6 +89,7 @@ void _MemorySystem (TMemorySystem *pThis)
 		// invalidate unified TLB (if MMU is re-enabled later)
 		asm volatile ("mcr p15, 0, %0, c8, c7,  0" : : "r" (0) : "memory");
 	}
+	*/
 	
 	//_PageTable (pThis->m_pPageTable1);
 	//free (pThis->m_pPageTable1);
@@ -107,6 +111,10 @@ void MemorySystemEnableMMU (TMemorySystem *pThis)
 
 	//assert (pThis->m_bEnableMMU);
 
+
+	// ACU
+
+	/*
 	u32 nAuxControl;
 	asm volatile ("mrc p15, 0, %0, c1, c0,  1" : "=r" (nAuxControl));
 #if RASPPI == 1
@@ -152,4 +160,7 @@ void MemorySystemEnableMMU (TMemorySystem *pThis)
 #endif
 	nControl |= MMU_MODE;
 	asm volatile ("mcr p15, 0, %0, c1, c0,  0" : : "r" (nControl) : "memory");
+
+	*/
+
 }

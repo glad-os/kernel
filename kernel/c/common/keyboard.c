@@ -45,18 +45,21 @@ static void KeyPressedHandler( const char *pString );
 void _kernel_keyboard_init( void )
 {
 
+	_kernel_video_print_string( "USPiEnvInitialize\n" );
 	if ( !USPiEnvInitialize() )
 	{
 		_kernel_video_print_string( "USB ENVIRONMENT FAIL\n" );
 		return;
 	}
 
+	_kernel_video_print_string( "USPiInitialize\n" );
 	if ( !USPiInitialize() )
 	{
 		_kernel_video_print_string( "USB INITIALIZATION FAIL\n" );
 		return;
 	}
 
+	_kernel_video_print_string( "USPiKeyboardAvailable\n" );
 	if ( !USPiKeyboardAvailable() )
 	{
 		_kernel_video_print_string( "KEYBOARD FAIL\n" );

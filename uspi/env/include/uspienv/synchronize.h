@@ -30,6 +30,11 @@ extern "C" {
 //
 // Interrupt control
 //
+// ACU
+// 64-bit
+//#define	EnableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x7")
+//#define	DisableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x0")
+// 32-bit
 #define	EnableInterrupts()	__asm volatile ("cpsie i")
 #define	DisableInterrupts()	__asm volatile ("cpsid i")
 
@@ -80,7 +85,7 @@ void CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength) MAXOPT;
 // Barriers
 //
 #define DataSyncBarrier()	__asm volatile ("dsb" ::: "memory")
-#define DataMemBarrier() 	__asm volatile ("dmb" ::: "memory")
+#define DataMemBarrier() 	__asm volatile ("dmb SY" ::: "memory")
 
 #define InstructionSyncBarrier() __asm volatile ("isb" ::: "memory")
 #define InstructionMemBarrier()	__asm volatile ("isb" ::: "memory")
