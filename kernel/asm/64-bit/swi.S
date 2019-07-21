@@ -30,6 +30,8 @@ swi_handler:
 						ADR			x4			, swi_params_ptr_out
 						STR			x1			, [x4]
 
+						MSR DAIFClr, #0x7 // re-enable interrupts as OS_ReadC blocks otherwise (this is what was missing yesterday - systimer can now continue!)
+
 						// take the SVC code from the ESR (Exception Syndrome Register) and pass it in to _kernel_swi_handler
 						MRS			x0			, ESR_EL1
 						AND			x0			, x0		, #0xffff
