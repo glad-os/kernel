@@ -108,6 +108,7 @@ _kernel_process_pop_cpu_state:
 							ldr x1, =saved_svc_sp_entrypoint
 							ldr x2, [x1]
 							mov sp, x2
+							//add sp,sp,#(256+16)+8
 
                             				ERET
 
@@ -136,7 +137,20 @@ _kernel_process_start:
 							MSR			SP_EL0			, x0
 							MOV			x0			, #4*1024*1024
 							MSR			ELR_EL1			, x0
-							
+
+							// bailing on the sync_handler - adjust sp to counteract all stack work done during the handling process
+							// (there needs to be a much nicer way of dealing with this - hard-coded amounts are crazy)
+							// can't just load saved_svc_sp_entrypoint simply because initial firing up of CLI isn't done via SWI (so saved_svc_sp_entrypoint is invalid!)
+							//
+							// the 256 bytes is the space taken on the stack by sync_handler when preserving all the registers
+							// the 8 bytes is the space taken in the handler when the LR is temporarily stored
+							// the 128 bytes appears to be the stack space taken by the various chains of functions called that are obviously never returned from
+							ldr x0,=saved_svc_sp_entrypoint
+							ldr x0, [x0]
+							cmp x0,#0
+							beq must_be_cli_starting_up_internally
+							mov sp, x0
+must_be_cli_starting_up_internally:
 							// return from Exception
 							ERET
 

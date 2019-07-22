@@ -150,6 +150,7 @@ boolean USBKeyboardDeviceConfigure (TUSBDevice *pUSBDevice)
 	
 	if (!USBDeviceConfigure (&pThis->m_USBDevice))
 	{
+		// ACU - 32-bit - configuration isn't available for some reason?
 		LogWrite (FromUSBKbd, LOG_ERROR, "Cannot set configuration");
 
 		return FALSE;

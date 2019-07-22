@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
+#include <stdint.h>
 #include "swi.h"
 #include "video.h"
 
 unsigned int _kernel_swi_os_setcolour( void )
 {
 
-	unsigned int *regs_ptr;
-	unsigned int f, r, g, b;
+	uintptr_t *regs_ptr;
+	uintptr_t f, r, g, b;
 
-	regs_ptr = (unsigned int *) swi_params_ptr_in;
+	regs_ptr = (uintptr_t *) swi_params_ptr_in;
 
 	f = *(regs_ptr+0);
 	r = *(regs_ptr+1);

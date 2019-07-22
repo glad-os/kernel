@@ -111,6 +111,8 @@ int _kernel_process_begin( char *filename ) {
 	current = slot;
 	_kernel_mmu_map_process_in( slot, 0,0 );
 	_kernel_fat32_load_file( filename_copy, (unsigned char *) ( 4 * MBYTE ) );
+
+	//_kernel_debug_sp();
 	_kernel_process_start();
 
 	return slot;
@@ -130,6 +132,8 @@ void _kernel_process_exit( void ) {
 
 	unsigned int parent, tmp_current;
 
+	// _kernel_debug_sp();
+
 	// free slot, map parent in, update current, reinstate process
 	proc[ current ].free = 1;
 
@@ -139,17 +143,6 @@ void _kernel_process_exit( void ) {
 
 	tmp_current = current;
 	current = parent;
-
-	unsigned int i;
-	i = 0;
-	while ( i < 4 ) {
-	_kernel_video_print_hex( proc[tmp_current].state.r[i] );
-	_kernel_video_print_string( " , " );
-	i++;
-	}
-	_kernel_video_print_string( "\n" );
-	_kernel_video_print_string( "Will set ELR_EL1 to 0x" ); _kernel_video_print_hex( proc[tmp_current].state.r[3] ); _kernel_video_print_string( "\n" );
-
 	_kernel_process_pop_cpu_state( (unsigned int *) &proc[ tmp_current ].state );
 
 }

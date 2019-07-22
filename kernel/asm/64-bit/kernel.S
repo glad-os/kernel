@@ -17,7 +17,7 @@
 
 
 .global 						_kernel_entry, _kernel_peek_value
-.global _kernel_echo_currentel
+.global 	_kernel_debug_sp
 .global swi_entrypoint_registers
 .global saved_svc_sp_entrypoint
 
@@ -200,13 +200,6 @@ sync_handler:
 							mov x0, #93
 							bl _kernel_video_print_char
 
-							mov x0, #91
-							bl _kernel_video_print_char
-							mrs x0, FAR_EL1
-							BL _kernel_video_print_hex
-							mov x0, #93
-							bl _kernel_video_print_char
-
 stick_around:						B stick_around
 
 el0_svc:
@@ -237,8 +230,9 @@ exit_sync_handler:
 							ldp	x0, x1, [sp, #16 * 16]	// holy shit this was it - I need to stack SPSR_EL1 and ELR_EL1 because interrupt handler corrupts it when it occurs!!
 							msr	ELR_EL1, x0
 							msr	SPSR_EL1, x1
+				
 							ldp	x0, x1, [sp, #16 * 0]
-							
+
 							add	sp, sp, #256+16
 							
 							ERET
@@ -254,6 +248,12 @@ swi_entrypoint_registers:			.dword		0, 0, 0, 0, 0
 						.balign 8
 
 
+_kernel_debug_sp:
+str lr,[sp,#-8]!
+mov x0,sp
+bl _kernel_video_print_hex
+ldr lr,[sp],#8
+ret
 							// ------------------------------------------------------------------------------------------------------------------------------------------------
 							//
 							//
@@ -388,10 +388,10 @@ _kernel_start_setup_el1_stack:
 
 
 							.align			8
-_kernel_el1_stack_pointer:				.dword			_kernel_el1_stack + 4096
+_kernel_el1_stack_pointer:				.dword			_kernel_el1_stack + (4096*1)
 
 							.balign			16
-_kernel_el1_stack:					.skip			8192
+_kernel_el1_stack:					.skip			8192*1
 
 
 
