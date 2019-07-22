@@ -41,7 +41,8 @@ typedef struct TBlockHeader
 	unsigned int	nSize		PACKED;
 	struct TBlockHeader *pNext	PACKED;
 	unsigned int	nPadding	PACKED;
-	unsigned char	Data[0];
+char acu1; char acu2; char acu3; char acu4;
+	unsigned char	Data[0];				
 }
 TBlockHeader;
 

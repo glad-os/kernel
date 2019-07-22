@@ -70,6 +70,7 @@ _kernel_process_pop_cpu_state:
 							//LDR 			x0			, =saved_svc_sp_entrypoint
 							//LDR 			sp			, [x0]
 							//MOV			lr			, x3
+							
                             				ERET
 
 

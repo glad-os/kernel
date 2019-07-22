@@ -321,6 +321,7 @@ boolean USBDeviceInitialize (TUSBDevice *pThis)
 	
 	if (!USBConfigurationParserIsValid (pThis->m_pConfigParser))
 	{
+		_kernel_video_print_string("OH DEAR\n" );
 		USBDeviceConfigurationError (pThis, FromDevice);
 
 		return FALSE;

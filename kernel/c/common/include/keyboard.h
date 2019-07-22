@@ -22,7 +22,7 @@
 
 
 	void 			_kernel_keyboard_init	( void );
-	unsigned int 	_kernel_keyboard_readc	( void );
+	char 	_kernel_keyboard_readc	( void );
 
 
 

@@ -17,6 +17,7 @@
 
 
 .global 						_kernel_entry, _kernel_peek_value
+.global _kernel_echo_currentel
 
 							//
 							// _kernel_entry
@@ -139,7 +140,7 @@ infinite_loop:						B			infinite_loop
 
 sync_handler:		
 							
-							sub	sp, sp, #256
+							sub	sp, sp, #256+16
 							stp	x0, x1, [sp, #16 * 0]
 							stp	x2, x3, [sp, #16 * 1]
 							stp	x4, x5, [sp, #16 * 2]
@@ -156,6 +157,9 @@ sync_handler:
 							stp	x26, x27, [sp, #16 * 13]
 							stp	x28, x29, [sp, #16 * 14]
 							str	x30, [sp, #16 * 15] 
+							mrs x0,ELR_EL1
+							mrs x1,SPSR_EL1
+							stp	x0, x1, [sp, #16 * 16]
 
 							mrs    x0, esr_el1
 							lsr    x0, x0, #26      // exception class (top 6-bits identify the class of sync exception that occurred - quite a few to choose from)
@@ -176,10 +180,18 @@ sync_handler:
 							BL _kernel_video_print_hex
 							mov x0, #93
 							bl _kernel_video_print_char
+
+							mov x0, #91
+							bl _kernel_video_print_char
+							mrs x0, FAR_EL1
+							BL _kernel_video_print_hex
+							mov x0, #93
+							bl _kernel_video_print_char
+
 stick_around:						B stick_around
 
 el0_svc:
-							// on entry to swi_handler, x0/x1 contain the pointers to the in/out data structures for the swi
+							// on entry to via an SVC call, x0/x1 contain the pointers to the in/out data structures for the swi
 							ldp x0, x1, [sp,#16*0]
 							BL swi_handler
 
@@ -202,7 +214,13 @@ exit_sync_handler:
 							ldp	x26, x27, [sp, #16 * 13]
 							ldp	x28, x29, [sp, #16 * 14]
 							ldr	x30, [sp, #16 * 15] 
-							add	sp, sp, #256		
+
+							ldp	x0, x1, [sp, #16 * 16]	// holy shit this was it - I need to stack SPSR_EL1 and ELR_EL1 because interrupt handler corrupts it when it occurs!!
+							msr	ELR_EL1, x0
+							msr	SPSR_EL1, x1
+							ldp	x0, x1, [sp, #16 * 0]
+							
+							add	sp, sp, #256+16
 							
 							ERET
 
@@ -254,7 +272,7 @@ the_irq_handler:
 							ldr	x30, [sp, #16 * 15] 
 							add	sp, sp, #256		
 
-							ERET
+							ERET	// is this a problem? I'm in the middle of an existing SVC Exception, an IRQ is allowed, triggered, and I end up here - does this cause issue?!
 							
 
 sync_handler_message:
@@ -263,6 +281,12 @@ sync_handler_message:
 							.balign			8
 
 
+_kernel_echo_currentel:
+			str lr, [sp,#-8]!
+			mrs x0,ELR_EL1
+			bl _kernel_video_print_hex
+			ldr lr,[sp],#8
+			ret
 
 fiq_handler:						MOV			x0			, #66
 							BL			_kernel_video_print_char

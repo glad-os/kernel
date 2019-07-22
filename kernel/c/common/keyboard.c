@@ -27,11 +27,13 @@
 #include "../../../uspi/include/uspios.h"
 
 
+extern void _kernel_echo_currentel(void);
+
 
 volatile char buffered = 0;
 
 // [64-bit] exclude KeyPressedHandler for the moment
-static void KeyPressedHandler( const char *pString );
+void KeyPressedHandler( char c );
 
 
 
@@ -45,7 +47,6 @@ static void KeyPressedHandler( const char *pString );
 void _kernel_keyboard_init( void )
 {
 
-	/*
 	_kernel_video_print_string( "USPiEnvInitialize\n" );
 	if ( !USPiEnvInitialize() )
 	{
@@ -68,7 +69,6 @@ void _kernel_keyboard_init( void )
 	}
 
 	USPiKeyboardRegisterKeyPressedHandler( KeyPressedHandler );
-	*/
 
 }
 
@@ -83,10 +83,10 @@ void _kernel_keyboard_init( void )
  */
 // [64-bit] exclude KeyPressedHandler for the moment
 
-static void KeyPressedHandler( const char *pString )
+void KeyPressedHandler( char c )
 {
 
-	buffered = pString[ 0 ];
+	buffered = c;
 
 }
 
@@ -100,10 +100,10 @@ static void KeyPressedHandler( const char *pString )
  * Returns value of next key pressed.
  *
  */
-unsigned int _kernel_keyboard_readc( void )
+char _kernel_keyboard_readc( void )
 {
 
-	unsigned int tmp;
+	char tmp;
 
 	// wait for key, find out code, and return with it
 	while ( !buffered ) { }

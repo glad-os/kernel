@@ -143,12 +143,12 @@ PACKED TUSBInterfaceDescriptor;
 // Endpoint Descriptor
 typedef struct
 {
-	unsigned char	bLength;
-	unsigned char	bDescriptorType;
-	unsigned char	bEndpointAddress;
-	unsigned char	bmAttributes;
-	unsigned short	wMaxPacketSize;
-	unsigned char	bInterval;
+	unsigned char	bLength;		// unsigned char acu1[7];
+	unsigned char	bDescriptorType;  	// unsigned char acu2[7];
+	unsigned char	bEndpointAddress;  	// unsigned char acu3[7];
+	unsigned char	bmAttributes;  		// unsigned char acu4[7];
+	unsigned short	wMaxPacketSize;  	// unsigned char acu5[6];
+	unsigned char	bInterval;  		// unsigned char acu6[7];
 }
 PACKED TUSBEndpointDescriptor;
 

@@ -24,13 +24,15 @@
 
 swi_handler:
 
-						STR lr, [sp,#-8]!
-						ADR			x4			, swi_params_ptr_in
-						STR			x0			, [x4]
-						ADR			x4			, swi_params_ptr_out
-						STR			x1			, [x4]
+						STR lr, [sp, #-8]!
+						
 
-						MSR DAIFClr, #0x7 // re-enable interrupts as OS_ReadC blocks otherwise (this is what was missing yesterday - systimer can now continue!)
+						MSR DAIFClr, #0x2 // re-enable interrupts as OS_ReadC blocks otherwise (this is what was missing yesterday - systimer can now continue!)
+
+						LDR			x4			, =swi_params_ptr_in						// stack r0 as this points to the _kernel_regs struct (in)
+						STR			x0			, [x4]
+						LDR			x4			, =swi_params_ptr_out						// stack r1 as this points to the _kernel_regs struct (out)
+						STR			x1			, [x4]
 
 						// take the SVC code from the ESR (Exception Syndrome Register) and pass it in to _kernel_swi_handler
 						MRS			x0			, ESR_EL1
@@ -38,23 +40,24 @@ swi_handler:
 						BL			_kernel_swi_handler
 
 finish_swi_handler:
-						LDR lr, [sp],#8
+						LDR lr, [sp], #8
 						RET
 
 						
 
 
-						.balign 8
-saved_svc_sp_entrypoint:			.word		0
 
 						.balign 8
-swi_entrypoint_registers:			.word		0, 0, 0, 0
+saved_svc_sp_entrypoint:			.dword		0
 
 						.balign 8
-swi_params_ptr_in:				.word		0
+swi_entrypoint_registers:			.dword		0, 0, 0, 0
 
 						.balign 8
-swi_params_ptr_out:				.word		0
+swi_params_ptr_in:				.dword		0
+
+						.balign 8
+swi_params_ptr_out:				.dword		0
 
 						.balign 8
 

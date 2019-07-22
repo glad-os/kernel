@@ -208,6 +208,10 @@ int DWHCIDeviceGetDescriptor (TDWHCIDevice *pThis, TUSBEndpoint *pEndpoint,
 {
 	assert (pThis != 0);
 
+	// ACU
+	//_kernel_video_print_string( "DWHCIDeviceGetDescriptor has pBuffer value of " );
+	//_kernel_video_print_hex( pBuffer );
+	//_kernel_video_print_string( "\n" );
 	return DWHCIDeviceControlMessage (pThis, pEndpoint,
 					ucRequestType, GET_DESCRIPTOR,
 					(ucType << 8) | ucIndex, 0,

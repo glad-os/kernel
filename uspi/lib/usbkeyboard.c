@@ -24,6 +24,7 @@
 #include "../../uspi/include/uspi/usbhid.h"
 #include "../../uspi/include/uspi/usbhostcontroller.h"
 #include "../../uspi/include/uspios.h"
+#include "../../uspi/include/uspi/util.h"
 
 //#define REPEAT_ENABLE					// does not work well with any Keyboard
 
@@ -118,8 +119,12 @@ boolean USBKeyboardDeviceConfigure (TUSBDevice *pUSBDevice)
 		pThis->m_ucInterfaceNumber  = pInterfaceDesc->bInterfaceNumber;
 		pThis->m_ucAlternateSetting = pInterfaceDesc->bAlternateSetting;
 
-		TUSBEndpointDescriptor *pEndpointDesc =
+		// pEndpointDescRaw not aligned in memory - need to ensure this happens
+		TUSBEndpointDescriptor *pEndpointDesc;
+		TUSBEndpointDescriptor *pEndpointDescRaw =
 			(TUSBEndpointDescriptor *) USBDeviceGetDescriptor (&pThis->m_USBDevice, DESCRIPTOR_ENDPOINT);
+		memcpy( pEndpointDesc, pEndpointDescRaw, sizeof( TUSBEndpointDescriptor ) );
+
 		if (   pEndpointDesc == 0
 		    || (pEndpointDesc->bEndpointAddress & 0x80) != 0x80		// Input EP
 		    || (pEndpointDesc->bmAttributes     & 0x3F)	!= 0x03)	// Interrupt EP
@@ -130,6 +135,12 @@ boolean USBKeyboardDeviceConfigure (TUSBDevice *pUSBDevice)
 		assert (pThis->m_pReportEndpoint == 0);
 		pThis->m_pReportEndpoint = malloc (sizeof (TUSBEndpoint));
 		assert (pThis->m_pReportEndpoint != 0);
+
+		// ACU
+		// looks like pEndpointDesc is making things unhappy?
+		_kernel_video_print_string( "pEndpointDesc = " );
+		_kernel_video_print_hex( pEndpointDesc );
+		_kernel_video_print_string( "\n" );
 		USBEndpoint2 (pThis->m_pReportEndpoint, &pThis->m_USBDevice, pEndpointDesc);
 
 		break;
@@ -263,7 +274,7 @@ void USBKeyboardDeviceGenerateKeyEvent (TUSBKeyboardDevice *pThis, u8 ucPhyCode)
 		{
 			if (pThis->m_pKeyPressedHandler != 0)
 			{
-				(*pThis->m_pKeyPressedHandler) (pKeyString);
+				(*pThis->m_pKeyPressedHandler) (pKeyString[0]);
 			}
 		}
 		break;
@@ -272,17 +283,15 @@ void USBKeyboardDeviceGenerateKeyEvent (TUSBKeyboardDevice *pThis, u8 ucPhyCode)
 
 boolean USBKeyboardDeviceStartRequest (TUSBKeyboardDevice *pThis)
 {
-	assert (pThis != 0);
 
-	assert (pThis->m_pReportEndpoint != 0);
-	assert (pThis->m_pReportBuffer != 0);
-	
-	assert (pThis->m_pURB == 0);
+	//assert (pThis != 0);
+	//assert (pThis->m_pReportEndpoint != 0);
+	//assert (pThis->m_pReportBuffer != 0);
+	//assert (pThis->m_pURB == 0);
 	pThis->m_pURB = malloc (sizeof (TUSBRequest));
-	assert (pThis->m_pURB != 0);
+	//assert (pThis->m_pURB != 0);
 	USBRequest (pThis->m_pURB, pThis->m_pReportEndpoint, pThis->m_pReportBuffer, BOOT_REPORT_SIZE, 0);
 	USBRequestSetCompletionRoutine (pThis->m_pURB, USBKeyboardDeviceCompletionRoutine, 0, pThis);
-	
 	return DWHCIDeviceSubmitAsyncRequest (USBDeviceGetHost (&pThis->m_USBDevice), pThis->m_pURB);
 }
 
@@ -338,7 +347,6 @@ void USBKeyboardDeviceCompletionRoutine (TUSBRequest *pURB, void *pParam, void *
 	_USBRequest (pThis->m_pURB);
 	free (pThis->m_pURB);
 	pThis->m_pURB = 0;
-	
 	USBKeyboardDeviceStartRequest (pThis);
 
 }

@@ -129,6 +129,7 @@ int _kernel_process_begin( char *filename ) {
  */
 void _kernel_process_exit( void ) {
 
+	_kernel_video_print_string( "\n_kernel_process_exit\n" );
 	unsigned int parent, tmp_current;
 
 	// free slot, map parent in, update current, reinstate process

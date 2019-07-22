@@ -41,7 +41,7 @@ void uspi_EnterCritical (void)
 	// ACU - 32/64
 	u32 nFlags;
 	//__asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
-	  __asm volatile ("mrs %0, daif" : "=r" (nFlags));
+	__asm volatile ("mrs %0, daif" : "=r" (nFlags));
 
 	DisableInterrupts ();
 
