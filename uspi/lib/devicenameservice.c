@@ -30,12 +30,10 @@ static TDeviceNameService *s_pThis = 0;
 void DeviceNameService (TDeviceNameService *pThis)
 {
 
-	_kernel_video_print_string( "DeviceNameService start\n" );
 	assert (pThis != 0);
 	pThis->m_pList = 0;
 	assert (s_pThis == 0);
 	s_pThis = pThis;
-	_kernel_video_print_string( "DeviceNameService finish\n" );
 
 }
 

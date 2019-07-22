@@ -38,7 +38,6 @@ void USBEndpoint (TUSBEndpoint *pThis, TUSBDevice *pDevice)
 void USBEndpoint2 (TUSBEndpoint *pThis, TUSBDevice *pDevice, const TUSBEndpointDescriptor *pDesc)
 {
 
-	_kernel_video_print_string( "pDesc on entry has been passed as " ); _kernel_video_print_hex( pDesc ); _kernel_video_print_string( "\n" );
 	assert (pThis != 0);
 	pThis->m_pDevice = pDevice;
 	pThis->m_nInterval = 1;
@@ -66,18 +65,13 @@ void USBEndpoint2 (TUSBEndpoint *pThis, TUSBDevice *pDevice, const TUSBEndpointD
 		return;
 	}
 	
-	_kernel_video_print_string( "[1]" );
 	pThis->m_ucNumber       = pDesc->bEndpointAddress & 0x0F;
-	_kernel_video_print_string( "[2]" );
 	pThis->m_bDirectionIn   = pDesc->bEndpointAddress & 0x80 ? TRUE : FALSE;
-	_kernel_video_print_string( "[3]" );
 	pThis->m_nMaxPacketSize = pDesc->wMaxPacketSize;
 	
-	_kernel_video_print_string( "[4]" );
 	if (pThis->m_Type == EndpointTypeInterrupt)
 	{
 
-		_kernel_video_print_string( "[5]" );
 		u8 ucInterval = pDesc->bInterval;
 		if (ucInterval < 1)
 		{
@@ -85,14 +79,12 @@ void USBEndpoint2 (TUSBEndpoint *pThis, TUSBDevice *pDevice, const TUSBEndpointD
 		}
 
 		// see USB 2.0 spec chapter 9.6.6
-		_kernel_video_print_string( "[6]" );
 		if (USBDeviceGetSpeed (pThis->m_pDevice) != USBSpeedHigh)
 		{
 			pThis->m_nInterval = ucInterval;
 		}
 		else
 		{
-		_kernel_video_print_string( "[7]" );
 			if (ucInterval > 16)
 			{
 				ucInterval = 16;
@@ -108,7 +100,6 @@ void USBEndpoint2 (TUSBEndpoint *pThis, TUSBDevice *pDevice, const TUSBEndpointD
 			}
 		}
 	}
-	_kernel_video_print_string( "[0]" );
 }
 
 void USBEndpointCopy (TUSBEndpoint *pThis, TUSBEndpoint *pEndpoint, TUSBDevice *pDevice)

@@ -107,7 +107,6 @@ int _kernel_process_begin( char *filename ) {
 	proc[ slot ].parent = current;
 	_kernel_process_push_cpu_state( (unsigned int *) &proc[ slot ].state );
 
-
 	// update current, map memory in, install binary, start process
 	current = slot;
 	_kernel_mmu_map_process_in( slot, 0,0 );
@@ -129,17 +128,27 @@ int _kernel_process_begin( char *filename ) {
  */
 void _kernel_process_exit( void ) {
 
-	_kernel_video_print_string( "\n_kernel_process_exit\n" );
 	unsigned int parent, tmp_current;
 
 	// free slot, map parent in, update current, reinstate process
 	proc[ current ].free = 1;
 
 	parent = proc[ current ].parent;
+
 	_kernel_mmu_map_process_in( parent, 1,1 );
 
 	tmp_current = current;
 	current = parent;
+
+	unsigned int i;
+	i = 0;
+	while ( i < 4 ) {
+	_kernel_video_print_hex( proc[tmp_current].state.r[i] );
+	_kernel_video_print_string( " , " );
+	i++;
+	}
+	_kernel_video_print_string( "\n" );
+	_kernel_video_print_string( "Will set ELR_EL1 to 0x" ); _kernel_video_print_hex( proc[tmp_current].state.r[3] ); _kernel_video_print_string( "\n" );
 
 	_kernel_process_pop_cpu_state( (unsigned int *) &proc[ tmp_current ].state );
 

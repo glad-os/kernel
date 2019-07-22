@@ -136,11 +136,6 @@ boolean USBKeyboardDeviceConfigure (TUSBDevice *pUSBDevice)
 		pThis->m_pReportEndpoint = malloc (sizeof (TUSBEndpoint));
 		assert (pThis->m_pReportEndpoint != 0);
 
-		// ACU
-		// looks like pEndpointDesc is making things unhappy?
-		_kernel_video_print_string( "pEndpointDesc = " );
-		_kernel_video_print_hex( pEndpointDesc );
-		_kernel_video_print_string( "\n" );
 		USBEndpoint2 (pThis->m_pReportEndpoint, &pThis->m_USBDevice, pEndpointDesc);
 
 		break;

@@ -25,7 +25,6 @@
 swi_handler:
 
 						STR lr, [sp, #-8]!
-						
 
 						MSR DAIFClr, #0x2 // re-enable interrupts as OS_ReadC blocks otherwise (this is what was missing yesterday - systimer can now continue!)
 
@@ -44,14 +43,6 @@ finish_swi_handler:
 						RET
 
 						
-
-
-
-						.balign 8
-saved_svc_sp_entrypoint:			.dword		0
-
-						.balign 8
-swi_entrypoint_registers:			.dword		0, 0, 0, 0
 
 						.balign 8
 swi_params_ptr_in:				.dword		0

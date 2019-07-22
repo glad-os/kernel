@@ -15,6 +15,8 @@
  */
 
 
+#include <stdint.h>
+
 
 #ifndef PROCESS_H
 #define PROCESS_H
@@ -25,8 +27,9 @@
 
 
 
+	// can record 32 registers (AArch64 = x0-x30, SP_EL0, ELR_EL1)
     typedef struct cpu_state {
-        unsigned int r[ 4 ];
+        uintptr_t r[ 32 ];
     } cpu_state;
 
     typedef struct process {

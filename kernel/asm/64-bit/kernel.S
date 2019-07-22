@@ -18,6 +18,8 @@
 
 .global 						_kernel_entry, _kernel_peek_value
 .global _kernel_echo_currentel
+.global swi_entrypoint_registers
+.global saved_svc_sp_entrypoint
 
 							//
 							// _kernel_entry
@@ -140,6 +142,21 @@ infinite_loop:						B			infinite_loop
 
 sync_handler:		
 							
+							ldr x2, =saved_svc_sp_entrypoint
+							mov x3, sp
+							str x3, [x2] // if we need to bail from sync_handler, this is a handy reference of what SP was on entry!
+
+							// next, make a record of x29, x30, SP(EL0), and ELR_EL1 (LR for EL0) as Process-related SWIs will want to keep a record of these
+							ldr x2, = swi_entrypoint_registers
+							STR		x29			, [x2,#0*8]
+							STR		x30			, [x2,#1*8]
+							mrs 		x3, SP_EL0
+							STR		x3			, [x2,#2*8]
+							mrs 		x3, ELR_EL1
+							STR		x3			, [x2,#3*8]
+							mrs 		x3, SPSR_EL1
+							STR		x3			, [x2,#4*8]
+
 							sub	sp, sp, #256+16
 							stp	x0, x1, [sp, #16 * 0]
 							stp	x2, x3, [sp, #16 * 1]
@@ -157,9 +174,11 @@ sync_handler:
 							stp	x26, x27, [sp, #16 * 13]
 							stp	x28, x29, [sp, #16 * 14]
 							str	x30, [sp, #16 * 15] 
-							mrs x0,ELR_EL1
+							mrs x0,ELR_EL1					// very important we stack these as IRQ handler, if triggered during SVC, overwrites them
 							mrs x1,SPSR_EL1
 							stp	x0, x1, [sp, #16 * 16]
+
+
 
 							mrs    x0, esr_el1
 							lsr    x0, x0, #26      // exception class (top 6-bits identify the class of sync exception that occurred - quite a few to choose from)
@@ -223,6 +242,17 @@ exit_sync_handler:
 							add	sp, sp, #256+16
 							
 							ERET
+
+
+
+
+						.balign 8
+saved_svc_sp_entrypoint:			.dword		0
+
+						.balign 8
+swi_entrypoint_registers:			.dword		0, 0, 0, 0, 0
+						.balign 8
+
 
 							// ------------------------------------------------------------------------------------------------------------------------------------------------
 							//

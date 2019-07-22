@@ -34,6 +34,26 @@
 							// ?
 							//
 _kernel_process_push_cpu_state:
+
+							// take key registers for now (just a subset)
+							// these will be pushed into the cpu_state for the process so it can become possible to return to it via OS_ProcessExit
+							LDR 		x1		, =swi_entrypoint_registers			// PUSH r11,r12,SP,LR
+							
+							ldr x2, [x1,#0*8]
+							str x2, [x0,#0*8]
+
+							ldr x2, [x1,#1*8]
+							str x2, [x0,#1*8]
+
+							ldr x2, [x1,#2*8]
+							str x2, [x0,#2*8]
+
+							ldr x2, [x1,#3*8]
+							str x2, [x0,#3*8]
+
+							ldr x2, [x1,#4*8]
+							str x2, [x0,#4*8]
+
 							RET
 
 
@@ -70,7 +90,25 @@ _kernel_process_pop_cpu_state:
 							//LDR 			x0			, =saved_svc_sp_entrypoint
 							//LDR 			sp			, [x0]
 							//MOV			lr			, x3
-							
+						
+							ldr x29, [x0, #0*8]
+
+							ldr x30, [x0, #1*8]
+
+							ldr x1, [x0, #2*8]
+							msr SP_EL0, x1
+
+							ldr x1, [x0, #3*8]
+							msr ELR_EL1, x1
+
+							ldr x1, [x0, #4*8]
+							msr SPSR_EL1, x1
+
+							// counteract the fact we are leaving early
+							ldr x1, =saved_svc_sp_entrypoint
+							ldr x2, [x1]
+							mov sp, x2
+
                             				ERET
 
 
