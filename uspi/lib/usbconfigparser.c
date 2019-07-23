@@ -17,6 +17,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+#include <stdint.h>
 #include "../../uspi/include/uspi/usbconfigparser.h"
 
 #include "../../uspi/include/uspi/assert.h"
@@ -185,7 +186,7 @@ void USBConfigurationParserError (TUSBConfigurationParser *pThis, const char *pS
 	assert (pSource != 0);
 	LogWrite (pSource, LOG_ERROR,
 		     "Invalid configuration descriptor (offset 0x%X)",
-		     (unsigned) pThis->m_pErrorPosition - (unsigned) pThis->m_pBuffer);
+		     (uintptr_t) pThis->m_pErrorPosition - (uintptr_t) pThis->m_pBuffer);
 #ifndef NDEBUG
 	DebugHexdump (pThis->m_pBuffer, pThis->m_nBufLen, pSource);
 #endif

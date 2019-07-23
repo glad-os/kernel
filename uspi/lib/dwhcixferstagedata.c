@@ -17,6 +17,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+
+#include <stdint.h>
+
 #include "../../uspi/include/uspi/dwhcixferstagedata.h"
 
 #include "../../uspi/include/uspi/assert.h"
@@ -359,12 +362,12 @@ boolean DWHCITransferStageDataIsStatusStage (TDWHCITransferStageData *pThis)
 	return pThis->m_bStatusStage;
 }
 
-u32 DWHCITransferStageDataGetDMAAddress (TDWHCITransferStageData *pThis)
+uintptr_t DWHCITransferStageDataGetDMAAddress (TDWHCITransferStageData *pThis)
 {
 	assert (pThis != 0);
 	assert (pThis->m_pBufferPointer != 0);
 
-	return (u32) pThis->m_pBufferPointer;
+	return (uintptr_t) pThis->m_pBufferPointer;
 }
 
 u32 DWHCITransferStageDataGetBytesToTransfer (TDWHCITransferStageData *pThis)

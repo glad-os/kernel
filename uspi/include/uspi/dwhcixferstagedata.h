@@ -21,6 +21,7 @@
 #ifndef _uspi__dwhcixferstagedata_h
 #define _uspi_dwhcixferstagedata_h
 
+#include <stdint.h>
 #include "../../../uspi/include/uspi/usb.h"
 #include "../../../uspi/include/uspi/usbrequest.h"
 #include "../../../uspi/include/uspi/usbdevice.h"
@@ -91,7 +92,7 @@ u8 DWHCITransferStageDataGetPID (TDWHCITransferStageData *pThis);
 boolean DWHCITransferStageDataIsDirectionIn (TDWHCITransferStageData *pThis);
 boolean DWHCITransferStageDataIsStatusStage (TDWHCITransferStageData *pThis);
 
-u32 DWHCITransferStageDataGetDMAAddress (TDWHCITransferStageData *pThis);
+uintptr_t DWHCITransferStageDataGetDMAAddress (TDWHCITransferStageData *pThis);
 u32 DWHCITransferStageDataGetBytesToTransfer (TDWHCITransferStageData *pThis);
 u32 DWHCITransferStageDataGetPacketsToTransfer (TDWHCITransferStageData *pThis);
 

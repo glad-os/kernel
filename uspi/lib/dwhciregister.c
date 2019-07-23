@@ -17,6 +17,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+#include <stdint.h>
 #include "../../uspi/include/uspi/dwhciregister.h"
 
 #include "../../uspi/include/uspi/assert.h"
@@ -45,8 +46,14 @@ void _DWHCIRegister (TDWHCIRegister *pThis)
 
 u32 DWHCIRegisterRead (TDWHCIRegister *pThis)
 {
+
+	// ACU
+	// uspi/lib/dwhciregister.c: In function 'DWHCIRegisterRead':
+	// uspi/lib/dwhciregister.c:50:22: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+	//   pThis->m_nBuffer = *(u32 *) pThis->m_nAddress;
+	//                       ^
 	assert (pThis != 0);
-	pThis->m_nBuffer = *(u32 *) pThis->m_nAddress;
+	pThis->m_nBuffer = *(u32 *) (uintptr_t) pThis->m_nAddress;
 	pThis->m_bValid = TRUE;
 	
 	return pThis->m_nBuffer;
@@ -56,7 +63,7 @@ void DWHCIRegisterWrite (TDWHCIRegister *pThis)
 {
 	assert (pThis != 0);
 	assert (pThis->m_bValid);
-	*(u32 *) pThis->m_nAddress = pThis->m_nBuffer;
+	*(u32 *) (uintptr_t) pThis->m_nAddress = pThis->m_nBuffer;
 }
 
 u32 DWHCIRegisterGet (TDWHCIRegister *pThis)

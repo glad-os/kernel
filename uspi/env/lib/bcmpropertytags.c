@@ -18,6 +18,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // 
 
+#include <stdint.h>
 #include "../../../uspi/env/include/uspienv/bcmpropertytags.h"
 
 #include "../../../uspi/env/include/uspienv/bcm2835.h"
@@ -81,7 +82,7 @@ boolean BcmPropertyTagsGetTag (TBcmPropertyTags *pThis, u32 nTagId,
 	DataSyncBarrier ();
 #endif
 
-	u32 nBufferAddress = BUS_ADDRESS ((u32) pBuffer);
+	uintptr_t nBufferAddress = BUS_ADDRESS ((uintptr_t) pBuffer);
 	/*
 	if (BcmMailBoxWriteRead (&pThis->m_MailBox, nBufferAddress) != nBufferAddress)
 	{
