@@ -120,13 +120,15 @@ boolean USBKeyboardDeviceConfigure (TUSBDevice *pUSBDevice)
 		pThis->m_ucAlternateSetting = pInterfaceDesc->bAlternateSetting;
 
 		// ACU - 32/64-bit [pEndpointDescRaw not aligned in memory - need to ensure this happens if it's 64-bit]
-		// 64-bit
-		TUSBEndpointDescriptor *pEndpointDesc;
-		TUSBEndpointDescriptor *pEndpointDescRaw =	(TUSBEndpointDescriptor *) USBDeviceGetDescriptor (&pThis->m_USBDevice, DESCRIPTOR_ENDPOINT);
-		memcpy( pEndpointDesc, pEndpointDescRaw, sizeof( TUSBEndpointDescriptor ) );
-		// 32-bit
-		// TUSBEndpointDescriptor *pEndpointDesc =	(TUSBEndpointDescriptor *) USBDeviceGetDescriptor (&pThis->m_USBDevice, DESCRIPTOR_ENDPOINT);
-		
+		#if ISA_TYPE == 64
+			// 64-bit
+			TUSBEndpointDescriptor *pEndpointDesc;
+			TUSBEndpointDescriptor *pEndpointDescRaw =	(TUSBEndpointDescriptor *) USBDeviceGetDescriptor (&pThis->m_USBDevice, DESCRIPTOR_ENDPOINT);
+			memcpy( pEndpointDesc, pEndpointDescRaw, sizeof( TUSBEndpointDescriptor ) );
+		#else
+			// 32-bit
+			TUSBEndpointDescriptor *pEndpointDesc =	(TUSBEndpointDescriptor *) USBDeviceGetDescriptor (&pThis->m_USBDevice, DESCRIPTOR_ENDPOINT);
+		#endif		
 		if (   pEndpointDesc == 0
 		    || (pEndpointDesc->bEndpointAddress & 0x80) != 0x80		// Input EP
 		    || (pEndpointDesc->bmAttributes     & 0x3F)	!= 0x03)	// Interrupt EP

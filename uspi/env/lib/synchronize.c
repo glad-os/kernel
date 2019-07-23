@@ -31,11 +31,13 @@ void EnterCritical (void)
 
 	u32 nFlags;
 	// ACU - 32/64-bit [pEndpointDescRaw not aligned in memory - need to ensure this happens if it's 64-bit]
-	// 64-bit
-	__asm volatile ("mrs %0, daif" : "=r" (nFlags));
-	// 32-bit
-	// __asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
-
+	#if ISA_TYPE == 64
+		// 64-bit
+		__asm volatile ("mrs %0, daif" : "=r" (nFlags));
+	#else
+		// 32-bit
+		__asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
+	#endif
 	DisableInterrupts ();
 
 	if (s_nCriticalLevel++ == 0)

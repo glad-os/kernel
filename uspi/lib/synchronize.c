@@ -25,12 +25,15 @@
 #include "../../uspi/include/uspi/types.h"
 
 // ACU - 32/64-bit [interrupt enable instructions]
-// 64-bit
-#define	EnableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x7")
-#define	DisableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x0")
-// 32-bit
-// #define	EnableInterrupts()	__asm volatile ("cpsie i")
-// #define	DisableInterrupts()	__asm volatile ("cpsid i")
+#if ISA_TYPE == 64
+	// 64-bit
+	#define	EnableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x7")
+	#define	DisableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x0")
+#else
+	// 32-bit
+	#define	EnableInterrupts()	__asm volatile ("cpsie i")
+	#define	DisableInterrupts()	__asm volatile ("cpsid i")
+#endif
 extern void			_kernel_mmu_clean_and_invalidate_cache_va( uintptr_t va );
 static volatile unsigned s_nCriticalLevel = 0;
 static volatile boolean s_bWereEnabled;
@@ -40,10 +43,13 @@ void uspi_EnterCritical (void)
 
 	u32 nFlags;
 	// ACU - 32/64-bit [interrupt flag instruction]
-	// 64-bit
-	__asm volatile ("mrs %0, daif" : "=r" (nFlags));
-	// 32-bit
-	// __asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
+	#if ISA_TYPE == 64
+		// 64-bit
+		__asm volatile ("mrs %0, daif" : "=r" (nFlags));
+	#else
+		// 32-bit
+		__asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
+	#endif
 
 	DisableInterrupts ();
 
