@@ -32,8 +32,7 @@ extern void _kernel_echo_currentel(void);
 
 volatile char buffered = 0;
 
-// [64-bit] exclude KeyPressedHandler for the moment
-void KeyPressedHandler( char c );
+void KeyPressedHandler( const char *c );
 
 
 
@@ -47,31 +46,25 @@ void KeyPressedHandler( char c );
 void _kernel_keyboard_init( void )
 {
 
-	_kernel_video_print_string( "USPiEnvInitialize\n" );
 	if ( !USPiEnvInitialize() )
 	{
 		_kernel_video_print_string( "USB ENVIRONMENT FAIL\n" );
 		return;
 	}
 
-	_kernel_video_print_string( "USPiInitialize\n" );
 	if ( !USPiInitialize() )
 	{
 		_kernel_video_print_string( "USB INITIALIZATION FAIL\n" );
 		return;
 	}
 
-	_kernel_video_print_string( "USPiKeyboardAvailable\n" );
 	if ( !USPiKeyboardAvailable() )
 	{
 		_kernel_video_print_string( "KEYBOARD FAIL\n" );
 		return;
 	}
 
-	_kernel_video_print_string( "USPiKeyboardRegisterKeyPressedHandler\n" );
 	USPiKeyboardRegisterKeyPressedHandler( KeyPressedHandler );
-
-	_kernel_video_print_string( "DONE\n" );
 
 }
 
@@ -86,10 +79,10 @@ void _kernel_keyboard_init( void )
  */
 // [64-bit] exclude KeyPressedHandler for the moment
 
-void KeyPressedHandler( char c )
+void KeyPressedHandler( const char *c )
 {
 
-	buffered = c;
+	buffered = *c;
 
 }
 

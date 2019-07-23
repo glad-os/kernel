@@ -119,12 +119,14 @@ boolean USBKeyboardDeviceConfigure (TUSBDevice *pUSBDevice)
 		pThis->m_ucInterfaceNumber  = pInterfaceDesc->bInterfaceNumber;
 		pThis->m_ucAlternateSetting = pInterfaceDesc->bAlternateSetting;
 
-		// pEndpointDescRaw not aligned in memory - need to ensure this happens
+		// ACU - 32/64-bit [pEndpointDescRaw not aligned in memory - need to ensure this happens if it's 64-bit]
+		// 64-bit
 		TUSBEndpointDescriptor *pEndpointDesc;
-		TUSBEndpointDescriptor *pEndpointDescRaw =
-			(TUSBEndpointDescriptor *) USBDeviceGetDescriptor (&pThis->m_USBDevice, DESCRIPTOR_ENDPOINT);
+		TUSBEndpointDescriptor *pEndpointDescRaw =	(TUSBEndpointDescriptor *) USBDeviceGetDescriptor (&pThis->m_USBDevice, DESCRIPTOR_ENDPOINT);
 		memcpy( pEndpointDesc, pEndpointDescRaw, sizeof( TUSBEndpointDescriptor ) );
-
+		// 32-bit
+		// TUSBEndpointDescriptor *pEndpointDesc =	(TUSBEndpointDescriptor *) USBDeviceGetDescriptor (&pThis->m_USBDevice, DESCRIPTOR_ENDPOINT);
+		
 		if (   pEndpointDesc == 0
 		    || (pEndpointDesc->bEndpointAddress & 0x80) != 0x80		// Input EP
 		    || (pEndpointDesc->bmAttributes     & 0x3F)	!= 0x03)	// Interrupt EP
@@ -270,7 +272,14 @@ void USBKeyboardDeviceGenerateKeyEvent (TUSBKeyboardDevice *pThis, u8 ucPhyCode)
 		{
 			if (pThis->m_pKeyPressedHandler != 0)
 			{
-				(*pThis->m_pKeyPressedHandler) (pKeyString[0]);
+				// ACU - warning for some reason here
+				//
+				// uspi/lib/usbkeyboard.c: In function 'USBKeyboardDeviceGenerateKeyEvent':
+				// uspi/lib/usbkeyboard.c:275:37: warning: passing argument 1 of 'pThis->m_pKeyPressedHandler' makes pointer from integer without a cast [-Wint-conversion]
+				//      (*pThis->m_pKeyPressedHandler) ((char) pKeyString[0]);
+				// 				     ^~~~~~~~~~~~~~~~~~~~
+				// uspi/lib/usbkeyboard.c:275:37: note: expected 'const char *' but argument is of type 'char'
+				(*pThis->m_pKeyPressedHandler) (pKeyString);
 			}
 		}
 		break;

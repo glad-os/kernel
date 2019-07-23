@@ -24,13 +24,13 @@
 #include "../../uspi/include/uspi/assert.h"
 #include "../../uspi/include/uspi/types.h"
 
-// ACU
+// ACU - 32/64-bit [interrupt enable instructions]
 // 64-bit
 #define	EnableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x7")
 #define	DisableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x0")
 // 32-bit
-//#define	EnableInterrupts()	__asm volatile ("cpsie i")
-//#define	DisableInterrupts()	__asm volatile ("cpsid i")
+// #define	EnableInterrupts()	__asm volatile ("cpsie i")
+// #define	DisableInterrupts()	__asm volatile ("cpsid i")
 extern void			_kernel_mmu_clean_and_invalidate_cache_va( uintptr_t va );
 static volatile unsigned s_nCriticalLevel = 0;
 static volatile boolean s_bWereEnabled;
@@ -38,10 +38,12 @@ static volatile boolean s_bWereEnabled;
 void uspi_EnterCritical (void)
 {
 
-	// ACU - 32/64
 	u32 nFlags;
-	//__asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
+	// ACU - 32/64-bit [interrupt flag instruction]
+	// 64-bit
 	__asm volatile ("mrs %0, daif" : "=r" (nFlags));
+	// 32-bit
+	// __asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
 
 	DisableInterrupts ();
 

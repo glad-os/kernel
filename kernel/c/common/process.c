@@ -111,8 +111,6 @@ int _kernel_process_begin( char *filename ) {
 	current = slot;
 	_kernel_mmu_map_process_in( slot, 0,0 );
 	_kernel_fat32_load_file( filename_copy, (unsigned char *) ( 4 * MBYTE ) );
-
-	//_kernel_debug_sp();
 	_kernel_process_start();
 
 	return slot;
@@ -131,8 +129,6 @@ int _kernel_process_begin( char *filename ) {
 void _kernel_process_exit( void ) {
 
 	unsigned int parent, tmp_current;
-
-	// _kernel_debug_sp();
 
 	// free slot, map parent in, update current, reinstate process
 	proc[ current ].free = 1;

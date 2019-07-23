@@ -111,16 +111,24 @@ svc_sp_value:						.word		saved_svc_sp_entrypoint
 _kernel_process_start:
 							// switch to SYS mode
 							MRS         	r1          	, cpsr
-                            				BIC         	r1          	, r1        	, #0b00011111
-                            				ORR         	r1          	, r1        	, #0b00011111
+                            				BIC         	r1          	, r1        	, #0b1111
+                            				ORR         	r1          	, r1        	, #0b1111
                             				MSR         	cpsr        	, r1
 
-							// prepare stack pointer and link register
+							// prepare the userland stack pointer
 							MOV         	sp          	, #8*1024*1024
 							SUB		sp		, sp		, #4
+
+							// switch back to SVC mode
+                            				MRS         	r1          	, cpsr
+                            				BIC         	r1          	, r1        	, #0b1111
+                            				ORR         	r1          	, r1        	, #0b0011
+							MSR		cpsr		, r1
+
+							// prepare the SPSR (based on CPSR) and link register, and return from the Exception formally to userland
+							MRS		r0		, CPSR
+							BIC		r0		, r0		, #0b1111 // set mode as USR
+							MSR		SPSR		, r0
 							MOV		lr		, #4*1024*1024
-
-							// return from Exception
 							ERET
-
 

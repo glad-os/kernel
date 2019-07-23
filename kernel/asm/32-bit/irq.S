@@ -39,6 +39,7 @@
 irq_handler:
 							SUB 			lr		,	lr		, #4					// [1] with an IRQ, the PC is 1 instruction beyond the instruction causing the exception
 							STMFD			sp!		,	{r0-r12,lr}
+
 							BL			_kernel_interrupt_handler
 							LDMFD			sp!		,	{r0-r12,pc}^						// [2]
 

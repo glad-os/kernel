@@ -29,10 +29,12 @@ static volatile boolean s_bWereEnabled;
 void EnterCritical (void)
 {
 
-	// ACU - 32/64
 	u32 nFlags;
-	//__asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
+	// ACU - 32/64-bit [pEndpointDescRaw not aligned in memory - need to ensure this happens if it's 64-bit]
+	// 64-bit
 	__asm volatile ("mrs %0, daif" : "=r" (nFlags));
+	// 32-bit
+	// __asm volatile ("mrs %0, cpsr" : "=r" (nFlags));
 
 	DisableInterrupts ();
 

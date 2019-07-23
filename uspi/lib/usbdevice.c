@@ -321,7 +321,6 @@ boolean USBDeviceInitialize (TUSBDevice *pThis)
 	
 	if (!USBConfigurationParserIsValid (pThis->m_pConfigParser))
 	{
-		_kernel_video_print_string("OH DEAR\n" );
 		USBDeviceConfigurationError (pThis, FromDevice);
 
 		return FALSE;
@@ -349,8 +348,6 @@ boolean USBDeviceConfigure (TUSBDevice *pThis)
 
 	if (pThis->m_pConfigDesc == 0)		// not initialized
 	{
-		// ACU - 32-bit issue?
-		_kernel_video_print_string( "pConfigDesc not initialized?\n" );
 		return FALSE;
 	}
 

@@ -39,8 +39,6 @@ void _kernel_systimer_init( void )
 	// @todo describe here, and document officially, the difference between Timer and SysTimer facilities
 	uint32_t val;
 
-	_kernel_video_print_string( "_kernel_systimer_init called\n" );
-
 	// set System Timer #1 using free running counter value
 	val = get_word( ARM_SYSTIMER_COUNTER_LOW_REGISTER );
 

@@ -129,6 +129,6 @@ TLogger *LoggerGet (void)
 void LoggerWrite2 (TLogger *pThis, const char *pString)
 {
 	// ACU - don't use ScreenDeviceWrite, use video_print (although switch off for now)
-	_kernel_video_print_string( (char *) pString );
+	// _kernel_video_print_string( (char *) pString );
 
 }

@@ -37,8 +37,8 @@ extern "C" {
 #define	EnableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x7")
 #define	DisableInterrupts()	__asm volatile ("MSR			DAIFClr			, #0x0")
 // 32-bit
-//#define	EnableInterrupts()	__asm volatile ("cpsie i")
-//#define	DisableInterrupts()	__asm volatile ("cpsid i")
+// #define	EnableInterrupts()	__asm volatile ("cpsie i")
+// #define	DisableInterrupts()	__asm volatile ("cpsid i")
 
 void EnterCritical (void);
 void LeaveCritical (void);

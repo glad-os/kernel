@@ -39,7 +39,6 @@ void USBConfigurationParser (TUSBConfigurationParser *pThis, const void *pBuffer
 	if (   pThis->m_nBufLen < 4		// wTotalLength must exist
 	    || pThis->m_nBufLen > 512)		// best guess
 	{
-		_kernel_video_print_string( "USBConfigurationParser: FAIL 1\n" );
 		return;
 	}
 
@@ -47,7 +46,6 @@ void USBConfigurationParser (TUSBConfigurationParser *pThis, const void *pBuffer
 	    || pThis->m_pBuffer->Configuration.bDescriptorType != DESCRIPTOR_CONFIGURATION
 	    || pThis->m_pBuffer->Configuration.wTotalLength    >  nBufLen)
 	{
-		_kernel_video_print_string( "USBConfigurationParser: FAIL 2\n" );
 		return;
 	}
 
@@ -68,7 +66,6 @@ void USBConfigurationParser (TUSBConfigurationParser *pThis, const void *pBuffer
 		if (pDescEnd > pThis->m_pEndPosition)
 		{
 			pThis->m_pErrorPosition = pCurrentPosition;
-			_kernel_video_print_string( "USBConfigurationParser: FAIL 3\n" );
 			return;
 		}
 
@@ -79,7 +76,6 @@ void USBConfigurationParser (TUSBConfigurationParser *pThis, const void *pBuffer
 			if (ucLastDescType != 0)
 			{
 				pThis->m_pErrorPosition = pCurrentPosition;
-			_kernel_video_print_string( "USBConfigurationParser: FAIL 4\n" );
 				return;
 			}
 			ucExpectedLen = sizeof (TUSBConfigurationDescriptor);
@@ -89,7 +85,6 @@ void USBConfigurationParser (TUSBConfigurationParser *pThis, const void *pBuffer
 			if (ucLastDescType == 0)
 			{
 				pThis->m_pErrorPosition = pCurrentPosition;
-			_kernel_video_print_string( "USBConfigurationParser: FAIL 5\n" );
 				return;
 			}
 			ucExpectedLen = sizeof (TUSBInterfaceDescriptor);
@@ -101,7 +96,6 @@ void USBConfigurationParser (TUSBConfigurationParser *pThis, const void *pBuffer
 			    || ucLastDescType == DESCRIPTOR_CONFIGURATION)
 			{
 				pThis->m_pErrorPosition = pCurrentPosition;
-			_kernel_video_print_string( "USBConfigurationParser: FAIL 6\n" );
 				return;
 			}
 			ucExpectedLen = bInAudioInterface ? sizeof (TUSBAudioEndpointDescriptor) : sizeof (TUSBEndpointDescriptor);
@@ -115,10 +109,7 @@ void USBConfigurationParser (TUSBConfigurationParser *pThis, const void *pBuffer
 		if (   ucExpectedLen != 0
 		    && ucDescLen != ucExpectedLen)
 		{
-			_kernel_video_print_string( "ucDescLen = " ); _kernel_video_print_hex( ucDescLen ); _kernel_video_print_string( "\n" );
-			_kernel_video_print_string( "ucExpectedLen = " ); _kernel_video_print_hex( ucExpectedLen ); _kernel_video_print_string( "\n" );
 			pThis->m_pErrorPosition = pCurrentPosition;
-			_kernel_video_print_string( "USBConfigurationParser: FAIL 7\n" );
 			return;
 		}
 
@@ -130,7 +121,6 @@ void USBConfigurationParser (TUSBConfigurationParser *pThis, const void *pBuffer
 	if (pCurrentPosition != pThis->m_pEndPosition)
 	{
 		pThis->m_pErrorPosition = pCurrentPosition;
-		_kernel_video_print_string( "USBConfigurationParser: FAIL 8\n" );
 		return;
 	}
 
