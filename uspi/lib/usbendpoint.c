@@ -20,6 +20,7 @@
 #include "../../uspi/include/uspi/usbendpoint.h"
 
 #include "../../uspi/include/uspi/assert.h"
+extern void *_kernel_memcpy( void *dst, void *src, unsigned int n );
 
 void USBEndpoint (TUSBEndpoint *pThis, TUSBDevice *pDevice)
 {
@@ -65,9 +66,10 @@ void USBEndpoint2 (TUSBEndpoint *pThis, TUSBDevice *pDevice, const TUSBEndpointD
 		return;
 	}
 	
+	// ACU pDesc->wMaxPacketSize can suffer with really bad alignment, so to simplify things just memcpy here
 	pThis->m_ucNumber       = pDesc->bEndpointAddress & 0x0F;
 	pThis->m_bDirectionIn   = pDesc->bEndpointAddress & 0x80 ? TRUE : FALSE;
-	pThis->m_nMaxPacketSize = pDesc->wMaxPacketSize;
+	_kernel_memcpy( (void *)&(pThis->m_nMaxPacketSize), (void *)&(pDesc->wMaxPacketSize), sizeof(pDesc->wMaxPacketSize) );
 	
 	if (pThis->m_Type == EndpointTypeInterrupt)
 	{
@@ -100,6 +102,7 @@ void USBEndpoint2 (TUSBEndpoint *pThis, TUSBDevice *pDevice, const TUSBEndpointD
 			}
 		}
 	}
+
 }
 
 void USBEndpointCopy (TUSBEndpoint *pThis, TUSBEndpoint *pEndpoint, TUSBDevice *pDevice)

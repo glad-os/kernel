@@ -70,7 +70,8 @@ void _kernel_systimer_event( void *argument )
 		*(unsigned int *)ARM_SYSTIMER_CONTROL_STATUS_REGISTER = (1<<1); // note web says write 0x80 but this contradicts BCM document they link to! *sigh*
 
 		// output something so we can some day get this working on 64-bit build
-		 _kernel_video_print_string( "." );
+		//  _kernel_video_print_string( "." );
+		
 		// systimer is 1MHz
 		val = get_word( ARM_SYSTIMER_COUNTER_LOW_REGISTER );
 		put_word( ARM_SYSTIMER_COMPARE_1_REGISTER, val + 1000000 );
