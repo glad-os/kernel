@@ -23,8 +23,8 @@
 
 	#define		ARM_PERIPHERAL_BASE_ADDRESS						0x3f000000
 
-	#define 	OS_VERSION										"0.2"
-	#define		OS_COMPILE_DATETIME								__DATE__ " " __TIME__
+	#define 	OS_VERSION								"0.5"
+	#define		OS_COMPILE_DATETIME							__DATE__ " " __TIME__
 
 
 
