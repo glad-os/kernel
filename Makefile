@@ -42,7 +42,7 @@ OBJCOPY_64  			= $(GCC_PATH_64)/aarch64-elf/bin/objcopy
 
 # 32/64 bit flags for Assembler and Compiler
 ARCH_64	 			= -march=armv8-a -mtune=cortex-a53
-FLAGS_C_64  			= $(ARCH_64) -std=gnu99 -fsigned-char -Wno-psabi -O$(OPTIMIZE) -fno-builtin -nostartfiles -ffreestanding -D ISA_TYPE=$(ISA_TYPE)
+FLAGS_C_64  			= $(ARCH_64) -std=gnu99 -fsigned-char -Wno-psabi -O$(OPTIMIZE) -nostdlib -fno-builtin -nostartfiles -ffreestanding -D ISA_TYPE=$(ISA_TYPE)
 FLAGS_A_64			= $(ARCH_64) -O$(OPTIMIZE) -D ISA_TYPE=$(ISA_TYPE)
 
 ARCH_32	 			= -march=armv8-a -mtune=cortex-a53 -mfpu=neon-fp-armv8 -mfloat-abi=hard
@@ -69,6 +69,8 @@ FLAGS_A_32			= $(ARCH_32) -O$(OPTIMIZE) -D ISA_TYPE=$(ISA_TYPE)
 
 32-bit: INCLUDE_DIR		= c/32-bit/include
 
+32-bit: KERNEL_NAME		= kernel7
+
 # -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  
 
 # 64-bit
@@ -89,6 +91,8 @@ FLAGS_A_32			= $(ARCH_32) -O$(OPTIMIZE) -D ISA_TYPE=$(ISA_TYPE)
 
 64-bit: INCLUDE_DIR		= c/64-bit/include/
 
+64-bit: KERNEL_NAME		= kernel8
+
 # -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  
 
 # clean
@@ -99,6 +103,7 @@ clean:
 	$(FIND) . -type f -name "*.bin"  -delete
 	$(FIND) . -type f -name "*.elf"  -delete
 	$(FIND) . -type f -name "*.list" -delete
+	$(FIND) . -type f -name "*.img"  -delete
 
 # -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  
 
@@ -121,7 +126,7 @@ kernel-32: uspi $(KERNEL_FILES_A_32) $(KERNEL_FILES_C_COMMON) $(KERNEL_FILES_C_3
 kernel-64: uspi $(KERNEL_FILES_A_64) $(KERNEL_FILES_C_COMMON) $(KERNEL_FILES_C_64) kernel-link
 
 kernel-link:
-	$(LD)  	linker.ld -o kernel.elf \
+	$(LD)  	linker.ld -o $(KERNEL_NAME).elf \
 			kernel/asm/$(ISA_TYPE)-bit/kernel.o  \
 			kernel/asm/$(ISA_TYPE)-bit/swi.o     \
 			kernel/asm/$(ISA_TYPE)-bit/stdlib.o  \
@@ -131,11 +136,11 @@ kernel-link:
 			$(KERNEL_FILES_C_COMMON) \
 			kernel/c/$(ISA_TYPE)-bit/*.o \
 			$(USPI_HOME)/lib/libuspi.a $(USPI_HOME)/env/lib/libuspienv.a
+	$(OBJDUMP) -D $(KERNEL_NAME).elf >         $(KERNEL_NAME).list
+	$(OBJCOPY)    $(KERNEL_NAME).elf -O ihex   $(KERNEL_NAME).hex
+	$(OBJCOPY)    $(KERNEL_NAME).elf -O binary $(KERNEL_NAME).img
+	$(OBJCOPY)    $(KERNEL_NAME).elf -O ihex   a
 
-	$(OBJCOPY) -I elf32-little -O binary --strip-debug --strip-unneeded --verbose kernel.elf kernel.bin 
-	$(OBJCOPY) kernel.elf -O ihex kernel.hex
-	$(OBJDUMP) -D kernel.elf > kernel.list
-	cp kernel.hex a
 
 $(KERNEL_HOME)/c/common/%.o : $(KERNEL_HOME)/c/common/%.c
 	$(GCC) -c $(KERNEL_FLAGS_C) $< -o $@  

@@ -37,11 +37,11 @@ void _kernel_init( void )
 	_kernel_interrupt_init();
 	_kernel_video_init();
 	_kernel_mmu_init();
-	_kernel_keyboard_init();
-	_kernel_emmc_init();
+	//_kernel_keyboard_init();
+	//_kernel_emmc_init();
 	_kernel_systimer_init();
-	_kernel_fat32_init();
-	_kernel_process_init();
+	//_kernel_fat32_init();
+	//_kernel_process_init();
 
 }
 

@@ -74,28 +74,39 @@ int mmu_enabled = 0;
 void _kernel_mmu_init( void )
 {
 
-	uint64_t tcr, page, flags, i, j;
+	uint64_t tcr, page, flags, i, j, address;
 
 	// populate the translation tables
 	for ( i = 0; i < 8; i++ ) {
 		// each level 2 entry is a table descriptor, pointing to the relevant level 3 table [D4-1792]
 		level_2_table[ i ] = ( (uint64_t) &level_3_tables[ i*8192 ] ) | MMU_TRANS_ENTRY_LEVEL_012_TABLE;
 	}
-	page = 0;
+	page    = 0;
+	address = 0x00000000;
 	for ( i = 0; i < 8; i++ ) {
 		for ( j = 0; j < 8192; j++ ) {
 			// level 3 entries are page descriptors, pointing to the relevant 64Kb page (944Mb+ = kernel/Pi device)
 			flags = MMU_PAGE_DESCRIPTOR_ACCESS_FLAG | MMU_PAGE_DESCRIPTOR_NON_SECURE | MMU_TRANS_ENTRY_LEVEL_3_PAGE;
-			if ( page >= ( (944 * MBYTE / 64) ) ) {
+			// memory coherent region (USPi)
+			if (
+				   ( ( address >=   2 * MBYTE ) && ( address < 3 * MBYTE ) ) /* memory coherent region (USPi) */
+				|| ( ( address >= 948 * MBYTE )                            ) /* Pi I/O area                   */
+			) {
 				flags |= MMU_PAGE_DESCRIPTOR_OUTER_SHAREABLE | 
 					 MMU_PAGE_DESCRIPTOR_ACCESS_EL1_RW_EL0_NONE |
 					 MMU_PAGE_DESCRIPTOR_MAIR_3;
 			} else {
+				/*
 				flags |= MMU_PAGE_DESCRIPTOR_INNER_SHAREABLE |
 					 MMU_PAGE_DESCRIPTOR_ACCESS_EL1_RW_EL0_NONE	| 
 					 MMU_PAGE_DESCRIPTOR_MAIR_3;
+				*/
+				flags |= MMU_PAGE_DESCRIPTOR_INNER_SHAREABLE |
+					 MMU_PAGE_DESCRIPTOR_MAIR_0;
 			}
-			level_3_tables[ i * 8192 + j ] = ( page++ << 16 ) | flags ;
+			level_3_tables[ i * 8192 + j ] = ( page << 16 ) | flags ;
+			page    += 1;
+			address += 64 * 1024;
 		}
 	}
 

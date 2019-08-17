@@ -21,7 +21,9 @@
 
 
 
-	#define		ARM_PERIPHERAL_BASE_ADDRESS						0x3f000000
+	// #define		ARM_PERIPHERAL_BASE_ADDRESS						0x3f000000
+	// Raspberry Pi 4
+	#define		ARM_PERIPHERAL_BASE_ADDRESS						0xfe000000
 
 	#define 	OS_VERSION								"0.5"
 	#define		OS_COMPILE_DATETIME							__DATE__ " " __TIME__

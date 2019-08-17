@@ -22,10 +22,11 @@
 
 #include "../../../uspi/include/uspios.h"
 
+// Raspberry Pi 4
 #if RASPPI == 1
 #define ARM_IO_BASE		0x20000000
 #else
-#define ARM_IO_BASE		0x3F000000
+#define ARM_IO_BASE		0xfe000000
 #endif
 
 #define GPU_IO_BASE		0x7E000000
