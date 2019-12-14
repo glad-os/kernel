@@ -23,7 +23,7 @@ FIND     			= find
 OPTIMIZE 			= 0
 
 # 32-bit toolchain
-GCC_PATH_32			= ~/Downloads/Software/ARM/32-bit/gcc-arm-8.2-2019.01-x86_64-arm-eabi
+GCC_PATH_32			= ~/Downloads/Software/ARM/32-bit/gcc-arm-8.3-2019.03-x86_64-arm-eabi
 GCC_32      			= $(GCC_PATH_32)/bin/arm-eabi-gcc
 AS_32       			= $(GCC_PATH_32)/arm-eabi/bin/as
 AR_32       			= $(GCC_PATH_32)/arm-eabi/bin/ar
@@ -32,7 +32,7 @@ OBJDUMP_32  			= $(GCC_PATH_32)/arm-eabi/bin/objdump
 OBJCOPY_32  			= $(GCC_PATH_32)/arm-eabi/bin/objcopy
 
 # 64-bit toolchain
-GCC_PATH_64			= ~/Downloads/Software/ARM/64-bit/gcc-arm-8.2-2019.01-x86_64-aarch64-elf
+GCC_PATH_64			= ~/Downloads/Software/ARM/64-bit/gcc-arm-8.3-2019.03-x86_64-aarch64-elf
 GCC_64      			= $(GCC_PATH_64)/bin/aarch64-elf-gcc
 AS_64       			= $(GCC_PATH_64)/aarch64-elf/bin/as
 AR_64       			= $(GCC_PATH_64)/aarch64-elf/bin/ar
