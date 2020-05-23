@@ -32,7 +32,7 @@ OBJDUMP_32  			= $(GCC_PATH_32)/arm-eabi/bin/objdump
 OBJCOPY_32  			= $(GCC_PATH_32)/arm-eabi/bin/objcopy
 
 # 64-bit toolchain
-GCC_PATH_64			= ~/Downloads/Software/ARM/64-bit/gcc-arm-8.2-2019.01-x86_64-aarch64-elf
+GCC_PATH_64			= ~/Downloads/Software/ARM/64-bit/gcc-arm-8.3-2019.03-x86_64-aarch64-elf
 GCC_64      			= $(GCC_PATH_64)/bin/aarch64-elf-gcc
 AS_64       			= $(GCC_PATH_64)/aarch64-elf/bin/as
 AR_64       			= $(GCC_PATH_64)/aarch64-elf/bin/ar

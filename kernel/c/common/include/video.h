@@ -38,6 +38,7 @@
 	unsigned int		_kernel_video_get_pixel					( unsigned int x, unsigned int y );
 	unsigned int		_kernel_video_get_mode					( void );
 	void			_kernel_video_print_hex					( unsigned int h );
+void _kernel_video_print_hex2( unsigned int h );
 	void 			_video_display_memory					( unsigned int tag );
 
 

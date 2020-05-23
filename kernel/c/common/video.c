@@ -632,3 +632,18 @@ void _kernel_video_print_hex( unsigned int h )
 	_kernel_video_print_string( toprint );
 
 }
+
+void _kernel_video_print_hex2( unsigned int h )
+{
+
+	char c[ 16 ] = "0123456789ABCDEF", toprint[ 3 ] = "--\0";
+	int i;
+
+	for ( i = 6; i < 8; i++ )
+	{
+		toprint[ i-6 ] = c[ ( h >> ( ( 7-i ) << 2 ) ) & 0xf ];
+	}
+
+	_kernel_video_print_string( toprint );
+
+}

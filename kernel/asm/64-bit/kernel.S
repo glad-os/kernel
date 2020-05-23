@@ -20,6 +20,7 @@
 .global 	_kernel_debug_sp
 .global swi_entrypoint_registers
 .global saved_svc_sp_entrypoint
+.global memory_barrier
 
 							//
 							// _kernel_entry
@@ -393,6 +394,12 @@ _kernel_el1_stack_pointer:				.dword			_kernel_el1_stack + (4096*1)
 							.balign			16
 _kernel_el1_stack:					.skip			8192*1
 
+
+
+memory_barrier:
+	mov x0, #0
+	dmb sy
+	ret
 
 
 							//

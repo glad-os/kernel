@@ -23,13 +23,21 @@
 
 put_word:
 						// todo
+
+						dmb sy
 						STR 		w1		, [x0]
+
+						dmb sy
     						RET
 
 
 get_word:
     						// todo
+
+						dmb sy
 						LDR 		w0		, [x0]
+
+						dmb sy
     						RET
 
 

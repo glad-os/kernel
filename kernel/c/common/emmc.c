@@ -30,7 +30,7 @@
 
 
 unsigned int ocr, rca, csd[4], capacity;
-unsigned char manufacturer[6], sector[512];
+unsigned char manufacturer[6], sector[512] __attribute__( ( aligned(4) ) );
 unsigned int tran_speed_exp[] = { 100000 / 10,	100000,	1000000, 10000000, 0, 0, 0, 0 };
 unsigned char tran_speed_man[] = { 0, 10, 12, 13, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80 };
 unsigned int emmc_clock_rate = 0;
@@ -75,8 +75,8 @@ int _kernel_emmc_init( void )
 	mailbox_buffer[ 0 ] = index * 4;		// Buffer size
 	_kernel_mailbox_write( 8, (uintptr_t) mailbox_buffer );
     	_kernel_mailbox_read( 8 );
-	emmc_clock_rate = mailbox_buffer[ 6 ];
-	// _kernel_video_print_string( "EMMC Clock Rate : " ); _kernel_video_print_decimal( emmc_clock_rate / (1 MHZ) ); _kernel_video_print_string( " MHz\n" );
+	emmc_clock_rate = mailbox_buffer[ 6 ] / 6;
+	//_kernel_video_print_string( "EMMC Clock Rate : " ); _kernel_video_print_decimal( emmc_clock_rate / (1 MHZ) ); _kernel_video_print_string( " MHz\n" );
 	// -- end of mailbox check
 
 	unsigned int gpio_pin;
@@ -84,10 +84,27 @@ int _kernel_emmc_init( void )
 	_kernel_video_print_string( "SD CARD: " );
 
 	// configure GPIO pins so they connect to the EMMC interface
-	for ( gpio_pin = EMMC_GPIO_PIN_CLK; gpio_pin <= EMMC_GPIO_PIN_DAT3; gpio_pin++ ) {
-		_kernel_gpio_function_select( gpio_pin, GPIO_SELECT_ALTERNATIVE_FUNCTION_3 );
-		_kernel_gpio_set_pull_up_or_down( gpio_pin, ARM_GPIO_PIN_ENABLE_PULL_UP );
+	//_kernel_gpio_set_pull_up_or_down( gpio_pin, ARM_GPIO_PIN_ENABLE_PULL_UP );
+	put_word( ARM_GPIO_REGISTERS + 0xd0, 3 ); // GPPinMuxSD
+
+	for ( gpio_pin = 22; gpio_pin < 22+6; gpio_pin++ ) {
+		_kernel_gpio_function_select( gpio_pin, GPIO_SELECT_INPUT );
+		_kernel_gpio_set_pull_up_or_down( gpio_pin, ARM_GPIO_PIN_DISABLE_PULL_UP_PULL_DOWN );
 	}
+	for ( gpio_pin = 34; gpio_pin < 34+6; gpio_pin++ ) {
+		_kernel_gpio_function_select( gpio_pin, GPIO_SELECT_INPUT );
+		_kernel_gpio_set_pull_up_or_down( gpio_pin, ARM_GPIO_PIN_DISABLE_PULL_UP_PULL_DOWN );
+	}
+	for ( gpio_pin = 48; gpio_pin < 48+6; gpio_pin++ ) {
+		_kernel_gpio_function_select( gpio_pin, GPIO_SELECT_ALTERNATIVE_FUNCTION_3 );
+		_kernel_gpio_set_pull_up_or_down( gpio_pin, ARM_GPIO_PIN_DISABLE_PULL_UP_PULL_DOWN );
+	}
+
+	//for ( gpio_pin = 34; gpio_pin <= 34+6; gpio_pin++ )
+	//	_kernel_gpio_function_select( gpio_pin, GPIO_SELECT_ALTERNATIVE_FUNCTION_0 );
+	for ( gpio_pin = 48; gpio_pin < 48+6; gpio_pin++ ) {
+	}
+
 
 	_kernel_emmc_reset_host();
 	_kernel_emmc_init_card();
@@ -110,7 +127,9 @@ void _kernel_emmc_reset_host( void ) {
 	unsigned int i;
 
 	// issue a reset to the host controller
-	put_word( EMMC_CONTROL0, EMMC_REGISTER_CONTROL_0_SPI_MODE_EN );
+	//put_word( EMMC_CONTROL0, EMMC_REGISTER_CONTROL_0_SPI_MODE_EN );
+	_kernel_video_print_string( "RESET HOST start...\n" );
+	put_word( EMMC_CONTROL1, get_word( EMMC_CONTROL1 ) | 1 ); // use 4 DAT lines
 	put_word( EMMC_CONTROL1, get_word( EMMC_CONTROL1 ) | EMMC_REGISTER_CONTROL_1_SRST_HC );
 	i = 10000;
 	do {
@@ -133,7 +152,9 @@ void _kernel_emmc_reset_host( void ) {
 	put_word( EMMC_IRPT_MASK, 0xffffffff );
 
 	// select idle state
+	_kernel_video_print_string( "SELECT IDLE...\n" );
 	_kernel_emmc_command( SPI_CMD_GO_IDLE_STATE, 0, EMMC_COMMAND_RESPONSE_TYPE_NO_RESPONSE );
+	_kernel_video_print_string( "RESET HOST done!\n" );
 
 }
 
@@ -160,7 +181,7 @@ void _kernel_emmc_init_card( void ) {
 	i = 10;
 	while( !( ocr & EMMC_SEND_OPP_COND_RESPONSE_COMPLETE ) && i-- ) {
 		_kernel_systimer_wait_msec( 500 );
-	    _kernel_emmc_command( SPI_CMD_APP_CMD, 0, EMMC_COMMAND_RESPONSE_TYPE_NO_RESPONSE );
+	    	_kernel_emmc_command( SPI_CMD_APP_CMD, 0, EMMC_COMMAND_RESPONSE_TYPE_NO_RESPONSE );
 		_kernel_emmc_command( SPI_ACMD_SD_SEND_OP_COND, EMMC_SEND_OPP_COND_ARG_HC, EMMC_COMMAND_RESPONSE_TYPE_48_BITS );
 	}
 	if ( !i ) {
@@ -177,7 +198,7 @@ void _kernel_emmc_init_card( void ) {
 	e = tran_speed_exp[ ( csd[ 0 ] & 0b00000111 )      ];
 	m = tran_speed_man[ ( csd[ 0 ] & 0b11111000 ) >> 3 ];
 	// _kernel_video_print_string( "CARD SPEED : " ); _kernel_video_print_decimal( (e*m) / (1 MHZ) ); _kernel_video_print_string( " MHz\n" );
-	_kernel_emmc_configure_sd_clock( e * m );
+	// _kernel_emmc_configure_sd_clock( e * m );
 
 	_kernel_emmc_command( SPI_CMD_CARD_SELECT, rca, EMMC_COMMAND_RESPONSE_TYPE_48_BITS_BUSY );
 
@@ -212,6 +233,13 @@ void _kernel_emmc_report_card_details( void ) {
 	( sector[510] == 0x55 && sector[511] == 0xaa ) ?
 		_kernel_video_print_string( "[FAT32]\n\n" ):
 		_kernel_video_print_string( "[UNRECOGNISED]\n\n" );
+
+	unsigned int i;
+	_kernel_video_print_string( "\n" );
+	for ( i = 511-16; i <= 511; i++ ) {
+		_kernel_video_print_string( "[" ); _kernel_video_print_hex2( sector[i] ); _kernel_video_print_string( "]" );
+	}
+	_kernel_video_print_string( "\n" );
 
 }
 
@@ -255,13 +283,13 @@ void _kernel_emmc_command( unsigned int command, unsigned int parameter, unsigne
 	// ensure command is clear to be issued beforehand
 	i = 1000;
 	while ( ( get_word( EMMC_STATUS ) & ( EMMC_REGISTER_STATUS_CMD_INHIBIT | EMMC_REGISTER_STATUS_DAT_INHIBIT ) ) && i-- )
-        	_kernel_systimer_wait_msec( 10 );
+        	_kernel_systimer_wait_msec( 1 );
 	if ( !i ) {
 		_kernel_panic( "EMMC", "Command timed out - inhibited" );
 	}
 
-	// clear interrupts
-	put_word( EMMC_INTERRUPT, get_word( EMMC_INTERRUPT ) );
+	// clear the "command complete" interrupt
+	put_word( EMMC_INTERRUPT, 1 /*get_word( EMMC_INTERRUPT )*/ );
 
 	// send the command
 	put_word( EMMC_ARG1, parameter );
@@ -278,19 +306,22 @@ void _kernel_emmc_command( unsigned int command, unsigned int parameter, unsigne
 			_kernel_systimer_wait_msec( 100 );
 			break;
 		case SPI_ACMD_SD_SEND_OP_COND:
-			_kernel_systimer_wait_msec( 100 );
+			_kernel_systimer_wait_msec( 1000 );
 			break;
 	}
 
 	// await response confirming command has completed
 	i = 1000;
-	while ( !( get_word( EMMC_INTERRUPT ) & EMMC_REGISTER_INTERRUPT_COMMAND_DONE ) && i-- ) {
+	while ( i && !( get_word( EMMC_INTERRUPT ) & EMMC_REGISTER_INTERRUPT_COMMAND_DONE ) ) {
 		_kernel_systimer_wait_msec( 1 );
+		i--;
 	}
 	if ( !i ) {
 		_kernel_panic( "EMMC", "Timeout waiting for command to complete" );
 	}
+	//put_word( EMMC_INTERRUPT, EMMC_REGISTER_INTERRUPT_COMMAND_DONE );
 
+	// get response data
 	switch ( command ) {
 		case SPI_ACMD_SD_SEND_OP_COND:
 			ocr = get_word( EMMC_RESP0 );
@@ -319,9 +350,6 @@ void _kernel_emmc_command( unsigned int command, unsigned int parameter, unsigne
 			csd[ 3 ] = ( csd[ 3 ] << 8 );
 			break;
 	}
-
-	// clear the interrupt (all of them for now)
-	put_word( EMMC_INTERRUPT, get_word( EMMC_INTERRUPT ) );
 
 }
 
@@ -372,7 +400,8 @@ int _kernel_emmc_configure_sd_clock( unsigned int f )
     if ( d <= 2 ) {
     	d = 2; s = 0;
     }
-	// _kernel_video_print_string( "[SDCLK] Divider value calculated as 0x" ); _kernel_video_print_hex( d ); _kernel_video_print_string( "\n" );
+
+     _kernel_video_print_string( "[SDCLK] Divider value calculated as 0x" ); _kernel_video_print_hex( d ); _kernel_video_print_string( "\n" );
     h = ( d & 0x300 ) >> 2;
     d = ( ( ( d & 0x0ff ) << 8 ) | h );
 
@@ -406,45 +435,40 @@ int _kernel_emmc_configure_sd_clock( unsigned int f )
  */
 void _kernel_emmc_read_block( unsigned int block_number, unsigned char *ptr ) {
 
-	unsigned int count, loop, counter, data;
+	unsigned int count, loop, counter, data, total, i;
 
-	count = 0;
-	while( ( get_word( EMMC_STATUS ) & SR_DAT_INHIBIT ) && !( get_word( EMMC_INTERRUPT ) & INT_ERROR_MASK ) && ( ++count < 500000 ) )
-		_kernel_systimer_wait_msec( 1 );
-	if ( count >= 500000 || ( get_word( EMMC_INTERRUPT ) & INT_ERROR_MASK ) ) {
-		_kernel_panic( "EMMC", "Failed waiting for data" );
-	}
+	for ( i = 0; i < 512; i++ ) { *(ptr+i) = 0xCC; }
+
+	while ( get_word( EMMC_STATUS ) & ( 1 | SR_DAT_INHIBIT ) ) { }
 
 	// SDSC Card (CCS=0) uses byte unit address; SDHC/SDXC Cards (CCS=1) use block unit address (512 bytes)
 	put_word( EMMC_BLKSIZECNT, (1 << 16) | 512 );
+	put_word( EMMC_INTERRUPT, (1<<1) ); // clear the "data transfer finished" interrupt
+
+	// look, let's just make sure there's no data hanging around first
+	while ( get_word( EMMC_INTERRUPT ) & EMMC_REGISTER_INTERRUPT_READ_READY ) {
+		_kernel_video_print_string( "." );
+		data = get_word( EMMC_DATA );
+	}
+
 	_kernel_emmc_command( SPI_CMD_READ_SINGLE_BLOCK, block_number, EMMC_COMMAND_RESPONSE_TYPE_48_BITS );
 
-	// @todo - remove magic number 512
-	counter = 512;
-	while ( counter ) {
+	counter = 0;
+	while ( counter < 512 ) {
 
-		// undocumented bit 11 tells us if data is *already* waiting
-		if ( get_word( EMMC_STATUS ) & SR_BUFFER_READY ) {
+		while ( ( get_word( EMMC_INTERRUPT ) & EMMC_REGISTER_INTERRUPT_READ_READY ) == 0 ) { }
+
+		while ( ( get_word( EMMC_INTERRUPT ) & EMMC_REGISTER_INTERRUPT_READ_READY ) && ( counter < 512 )     ) {
+			_kernel_video_print_string( "-" );
 			data = get_word( EMMC_DATA );
-			*ptr++ = ( data       ) & 0xff;
-			*ptr++ = ( data >>  8 ) & 0xff;
-			*ptr++ = ( data >> 16 ) & 0xff;
-			*ptr++ = ( data >> 24 ) & 0xff;
-			counter -= 4;
-        	continue;
-    	}
-
-		// otherwise, await "READ READY" interrupt (tells us transition from data not available to data available)
-		loop = 1000;
-		while ( !get_word( EMMC_INTERRUPT ) && loop-- ) {
-			_kernel_systimer_wait_msec( 1 );
+			//put_word( EMMC_DATA, 0xdd );
+    			//_kernel_systimer_wait_msec( 10 );
+			*ptr++ = ( data       ) &0xff;
+			*ptr++ = ( data >>  8 ) &0xff;
+			*ptr++ = ( data >> 16 ) &0xff;
+			*ptr++ = ( data >> 24 ) &0xff;
+			counter += 4;
 		}
-		if ( !( get_word( EMMC_INTERRUPT ) & EMMC_REGISTER_INTERRUPT_READ_READY ) ) {
-			_kernel_panic( "EMMC", "Timeout reading (no 'READY' received)" );
-		}
-
-		// clear the interrupt
-		put_word( EMMC_INTERRUPT , EMMC_REGISTER_INTERRUPT_READ_READY );
 
 	}
 

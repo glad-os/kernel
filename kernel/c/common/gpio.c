@@ -18,6 +18,7 @@
 
 #include "gpio.h"
 #include "start.h"
+#include "video.h"
 
 
 
@@ -43,8 +44,8 @@ void _kernel_gpio_function_select( unsigned int pin, unsigned int fn ) {
     shift = (pin % 10) * 3;
 
     value = get_word( reg );
-    value &= ~(   0b111        << shift );
-    value |=  ( ( 0b100 + fn ) << shift );
+    value &= ~( 0b111 << shift );
+    value |=  ( fn    << shift );
     put_word( reg, value );
 
 }
@@ -60,22 +61,19 @@ void _kernel_gpio_function_select( unsigned int pin, unsigned int fn ) {
  */
 void _kernel_gpio_set_pull_up_or_down( unsigned int pin, unsigned int state ) {
 
-	unsigned int bit, reg;
+	
+	// pi4 seems very different here
+	unsigned int which_cntrl_reg, which_reg_entry;
+	unsigned int addr, value;
 
-	if ( pin < 32 ) {
-		reg = ARM_GPIO_PULL_UP_DOWN_ENABLE_CLOCK_0;
-		bit = 1 << pin;
-	} else {
-		reg = ARM_GPIO_PULL_UP_DOWN_ENABLE_CLOCK_1;
-		bit = 1 << ( pin - 32 );
-	}
+	which_cntrl_reg = pin >> 4;		// each cntrl reg offers 16 pins
+	which_reg_entry = (pin % 16) << 1;	// need to know which 2-bits in the reg need configuring
 
-	// BCM2835 (p101/235)
-	put_word( ARM_GPIO_PULL_UP_DOWN_ENABLE, state );
-	delay_loop( 150 );
-	put_word( reg, bit );
-	delay_loop( 150 );
-	put_word( ARM_GPIO_PULL_UP_DOWN_ENABLE, 0 );
-	put_word( reg, 0 );
+	addr = ARM_GPIO_REGISTERS + 0xE4 + (which_cntrl_reg * 4);
+
+	value = get_word( addr );
+	value = value & ~(0b11 << which_reg_entry );
+	value = value | ( ARM_GPIO_PIN_DISABLE_PULL_UP_PULL_DOWN << which_reg_entry );
+	put_word( addr, value );
 
 }
