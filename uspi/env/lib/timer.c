@@ -29,7 +29,7 @@
 #include "../../../uspi/env/include/uspienv/sysconfig.h"
 #include "../../../kernel/c/common/include/irq.h"
 #include "../../../kernel/c/common/include/define.h"
-
+#include "../../../kernel/c/common/include/video.h"
 
 
 extern void put_word( unsigned int, unsigned int );

@@ -131,7 +131,7 @@ void DWHCIRegisterSetAll (TDWHCIRegister *pThis)
 	pThis->m_bValid = TRUE;
 }
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
 
 void DWHCIRegisterDump (TDWHCIRegister *pThis)
 {
@@ -140,7 +140,7 @@ void DWHCIRegisterDump (TDWHCIRegister *pThis)
 	{
 		LogWrite ("dwhci", LOG_DEBUG,
 			     "Register at 0x%X is 0x%X",
-			     pThis->m_nAddress & 0xFFF, pThis->m_nBuffer);
+			     pThis->m_nAddress /*& 0xFFF*/, pThis->m_nBuffer);
 	}
 	else
 	{
@@ -150,4 +150,4 @@ void DWHCIRegisterDump (TDWHCIRegister *pThis)
 	}
 }
 
-#endif
+//#endif

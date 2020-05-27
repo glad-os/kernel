@@ -90,19 +90,20 @@ void _kernel_mmu_init( void )
 			// memory coherent region (USPi)
 			if (
 				   ( ( address >=   2 * MBYTE ) && ( address < 3 * MBYTE ) ) /* memory coherent region (USPi) */
-				|| ( ( address >= 944 * MBYTE )                            ) /* Pi I/O area                   */
+				|| ( ( address >= 946 * MBYTE )                            ) /* Pi I/O area                   */
 			) {
 				flags |= MMU_PAGE_DESCRIPTOR_OUTER_SHAREABLE | 
 					 MMU_PAGE_DESCRIPTOR_ACCESS_EL1_RW_EL0_NONE |
 					 MMU_PAGE_DESCRIPTOR_MAIR_3;
 			} else {
-				flags |= MMU_PAGE_DESCRIPTOR_INNER_SHAREABLE |
-					 MMU_PAGE_DESCRIPTOR_ACCESS_EL1_RW_EL0_NONE	| 
-					 MMU_PAGE_DESCRIPTOR_MAIR_3;
 				/*
 				flags |= MMU_PAGE_DESCRIPTOR_INNER_SHAREABLE |
+					 MMU_PAGE_DESCRIPTOR_ACCESS_EL1_RW_EL0_NONE	| 
+				*/	 MMU_PAGE_DESCRIPTOR_MAIR_3;
+				
+				flags |= MMU_PAGE_DESCRIPTOR_INNER_SHAREABLE |
 					 MMU_PAGE_DESCRIPTOR_MAIR_0;
-				*/
+				
 			}
 			level_3_tables[ i * 8192 + j ] = ( page << 16 ) | flags ;
 			page    += 1;

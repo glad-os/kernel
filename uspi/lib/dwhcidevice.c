@@ -120,6 +120,7 @@ void _DWHCIDevice (TDWHCIDevice *pThis)
 boolean DWHCIDeviceInitialize (TDWHCIDevice *pThis)
 {
 
+	LogWrite (FromDWHCI, LOG_ERROR, "DWHCIDeviceInitialize begins...");
 	assert (pThis != 0);
 
 	DataMemBarrier ();
@@ -537,6 +538,9 @@ boolean DWHCIDeviceInitHost (TDWHCIDevice *pThis)
 
 boolean DWHCIDeviceEnableRootPort (TDWHCIDevice *pThis)
 {
+
+	// KJS this is where we're failing...
+
 	assert (pThis != 0);
 
 	TDWHCIRegister HostPort;
@@ -1336,6 +1340,8 @@ void DWHCIDeviceFreeChannel (TDWHCIDevice *pThis, unsigned nChannel)
 
 boolean DWHCIDeviceWaitForBit (TDWHCIDevice *pThis, TDWHCIRegister *pRegister, u32 nMask, boolean bWaitUntilSet, unsigned nMsTimeout)
 {
+
+	//_kernel_video_print_string( "DWHCIDeviceWaitForBit..." );
 	assert (pThis != 0);
 
 	assert (pRegister != 0);
@@ -1348,14 +1354,16 @@ boolean DWHCIDeviceWaitForBit (TDWHCIDevice *pThis, TDWHCIRegister *pRegister, u
 
 		if (--nMsTimeout == 0)
 		{
-			//LogWrite (FromDWHCI, LOG_WARNING, "Timeout");
+			//_kernel_video_print_string( "FAIL\n" );
+			LogWrite (FromDWHCI, LOG_WARNING, "Timeout");
 #ifndef NDEBUG
-			//DWHCIRegisterDump (pRegister);
+			DWHCIRegisterDump (pRegister);
 #endif
 			return FALSE;
 		}
 	}
 	
+	//_kernel_video_print_string( "OK\n" );
 	return TRUE;
 }
 

@@ -35,6 +35,7 @@ static TUSPiLibrary *s_pLibrary = 0;
 // ACU
 void _USPiInitialize( void )
 {
+
 	_DWHCIDevice (&s_pLibrary->DWHCI);
 	_DeviceNameService (&s_pLibrary->NameService);
 	//free (s_pLibrary);
@@ -44,6 +45,8 @@ void _USPiInitialize( void )
 
 int USPiInitialize (void)
 {
+
+	_kernel_video_print_string( "USPiInitialize\n" );
 
 	assert (s_pLibrary == 0);
 
