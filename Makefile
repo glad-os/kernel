@@ -135,7 +135,6 @@ kernel-link:
 	$(OBJCOPY) -I elf32-little -O binary --strip-debug --strip-unneeded --verbose kernel.elf kernel.bin 
 	$(OBJCOPY) kernel.elf -O ihex kernel.hex
 	$(OBJDUMP) -D kernel.elf > kernel.list
-	cp kernel.hex a
 
 $(KERNEL_HOME)/c/common/%.o : $(KERNEL_HOME)/c/common/%.c
 	$(GCC) -c $(KERNEL_FLAGS_C) $< -o $@  
