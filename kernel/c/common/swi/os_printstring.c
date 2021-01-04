@@ -23,14 +23,11 @@
 
 
 
-unsigned int _kernel_swi_os_printstring( void )
+unsigned int _kernel_swi_os_printstring( char *s )
 {
 
-	uintptr_t *regs_ptr;
+	_kernel_video_print_string( s );
 
-	regs_ptr = (uintptr_t *) swi_params_ptr_in;
-	_kernel_video_print_string( (char *)(*regs_ptr+0) );
-
-	return 0;
+	return 0x12345678;
 
 }

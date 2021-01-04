@@ -98,7 +98,8 @@ int _kernel_process_begin( char *filename ) {
 	_kernel_strcpy( filename_copy, filename );
 
 	// find process slot
-	if ( ( slot = _kernel_process_find_free_slot() ) == ERROR_PROCESS_SLOT_UNAVAILABLE ) {
+    slot = _kernel_process_find_free_slot();
+	if ( slot == ERROR_PROCESS_SLOT_UNAVAILABLE ) {
 		return slot;
 	}
 

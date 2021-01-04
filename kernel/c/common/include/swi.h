@@ -25,29 +25,18 @@
 
 
 
-	// up to a maximum of 4 register values can be passed in/out of an SWI using this structure
-	struct _kernel_regs {
-		uintptr_t r[ 4 ];
-	};
-
-	// internal SWI handlers
-	uintptr_t _kernel_swi_handler( uintptr_t swi );
-
 	unsigned int _kernel_swi_os_setmode( void );
-	unsigned int _kernel_swi_os_setcolour( void );
+	unsigned int _kernel_swi_os_setcolour( unsigned int f, unsigned int r, unsigned int g, unsigned int b );
 	unsigned int _kernel_swi_os_clearscreen( void );
 	unsigned int _kernel_swi_os_putpixel( void );
 	unsigned int _kernel_swi_os_getpixel( void );
 	unsigned int _kernel_swi_os_setcursorposition( void );
-	unsigned int _kernel_swi_os_printchar( void );
-	unsigned int _kernel_swi_os_printstring( void );
+	unsigned int _kernel_swi_os_printchar( char c );
+	unsigned int _kernel_swi_os_printstring( char *s );
 	unsigned int _kernel_swi_os_readvideovariables( void );
 	unsigned int _kernel_swi_os_readc( void );
-    	unsigned int _kernel_swi_os_processbegin( void );
+    	unsigned int _kernel_swi_os_processbegin( char *name );
     	unsigned int _kernel_swi_os_processexit( void );
-
-	extern unsigned int *swi_params_ptr_in;
-	extern unsigned int *swi_params_ptr_out;
 
 
 

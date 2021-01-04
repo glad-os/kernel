@@ -77,7 +77,6 @@ void _kernel_panic( char *subsystem, char *msg )
  */
 void _kernel_start_cli( void ) {
 
-	struct _kernel_regs in,out;
 	char *appname = "CLI.BIN";
 
 	// no longer call SWI as this requires us to drop the kernel into userspace in order to SWI itself

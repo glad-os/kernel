@@ -18,18 +18,9 @@
 #include "swi.h"
 #include "video.h"
 
-unsigned int _kernel_swi_os_setcolour( void )
+unsigned int _kernel_swi_os_setcolour( unsigned int f, unsigned int r, unsigned int g, unsigned int b )
 {
 
-	uintptr_t *regs_ptr;
-	uintptr_t f, r, g, b;
-
-	regs_ptr = (uintptr_t *) swi_params_ptr_in;
-
-	f = *(regs_ptr+0);
-	r = *(regs_ptr+1);
-	g = *(regs_ptr+2);
-	b = *(regs_ptr+3);
 	_kernel_video_set_colour( f, (r<<16) + (g<<8) + b );
 
 	return 0;

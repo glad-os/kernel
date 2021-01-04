@@ -18,19 +18,10 @@
 #include "process.h"
 #include <stdint.h>
 
-unsigned int _kernel_swi_os_processbegin( void )
+unsigned int _kernel_swi_os_processbegin( char *name )
 {
 
-	// [64-bit] exclude process-related code from the build for the moment
-	// _kernel_video_print_string( "_kernel_swi_os_processbegin\n" );
-
-	char *c;
-	uintptr_t *regs_ptr;
-
-	regs_ptr = (uintptr_t *) swi_params_ptr_in;
-	c = (char *) *(regs_ptr+0);
-
-	_kernel_process_begin( c );
+	_kernel_process_begin( name );
 
 	return 0;
 

@@ -21,26 +21,6 @@
 
 
 
-typedef unsigned int (*swi_function)( void );
-
-swi_function handler[] =
-{
-	_kernel_swi_os_setmode,
-	_kernel_swi_os_setcolour,
-	_kernel_swi_os_clearscreen,
-	_kernel_swi_os_putpixel,
-	_kernel_swi_os_getpixel,
-	_kernel_swi_os_setcursorposition,
-	_kernel_swi_os_printchar,
-	_kernel_swi_os_printstring,
-	_kernel_swi_os_readvideovariables,
-	_kernel_swi_os_readc,
-	_kernel_swi_os_processbegin,
-	_kernel_swi_os_processexit
-};
-
-
-
 /**
  *
  * _kernel_swi_handler
@@ -51,6 +31,7 @@ swi_function handler[] =
 uintptr_t _kernel_swi_handler( uintptr_t swi )
 {
 
+        /*
 	// notify the screen of the SWI number invoked, as well as the value of in.r[0]
 	uintptr_t *regs_ptr;
 	regs_ptr = (uintptr_t *) swi_params_ptr_in;
@@ -60,5 +41,6 @@ uintptr_t _kernel_swi_handler( uintptr_t swi )
 	// @todo the handler should return the result
 	handler[ swi ]();
 	return 0;
+        */
 
 }

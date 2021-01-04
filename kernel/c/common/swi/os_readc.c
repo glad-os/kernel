@@ -21,11 +21,10 @@
 unsigned int _kernel_swi_os_readc( void )
 {
 
-	// read character, and place its value into the outbound structure
 	unsigned int c;
-	c = _kernel_keyboard_readc();
-	*(swi_params_ptr_out+0) = c;
 
-	return 0;
+	c = _kernel_keyboard_readc();
+
+	return c;
 
 }
