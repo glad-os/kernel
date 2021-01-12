@@ -22,6 +22,7 @@
 #include "mmu.h"
 #include "start.h"
 #include "stdlib.h"
+#include "video.h"
 
 
 
@@ -93,28 +94,55 @@ int _kernel_process_find_free_slot( void ) {
 int _kernel_process_begin( char *filename ) {
 
 	int slot;
+        cpu_state *state;
 
 	// make a copy of the filename before the process is mapped out
 	_kernel_strcpy( filename_copy, filename );
 
 	// find process slot
-    slot = _kernel_process_find_free_slot();
+        slot = _kernel_process_find_free_slot();
 	if ( slot == ERROR_PROCESS_SLOT_UNAVAILABLE ) {
 		return slot;
 	}
 
-	// claim, record parent id, snapshot parent state
-	proc[ slot ].free = 0;
+	// claim, record parent id, initialise cpu state
+	proc[ slot ].free   = 0;
 	proc[ slot ].parent = current;
-	_kernel_process_push_cpu_state( (unsigned int *) &proc[ slot ].state );
+        state = &proc[ slot ].state;
+        _kernel_process_init_cpu_state( state );
 
-	// update current, map memory in, install binary, start process
+	// update current, map memory in, install binary, and officially "continue" the process at this point
 	current = slot;
 	_kernel_mmu_map_process_in( slot, 0,0 );
 	_kernel_fat32_load_file( filename_copy, (unsigned char *) ( 4 * MBYTE ) );
-	_kernel_process_start();
+	_kernel_process_continue( state );
 
 	return slot;
+
+}
+
+
+
+/**
+ *
+ * _kernel_process_init_cpu_state
+ *
+ * Initialises the CPU state of a given process (ready to run for the first time)
+ *
+ */
+int _kernel_process_init_cpu_state( cpu_state *state ) {
+
+    int r;
+
+    for ( r = 0; r <= 12; r++ ) {
+        state->r[0] = 0;
+    }
+
+    // sp, lr, pc and cpsr require specific values at startup
+    state->r[13] = 8 * MBYTE;
+    state->r[14] = 0;
+    state->r[15] = 4 * MBYTE;
+    state->r[16] = 16; /* 16 = USR mode */ // @todo what should the default CPSR value be for a userland process?
 
 }
 
@@ -129,17 +157,20 @@ int _kernel_process_begin( char *filename ) {
  */
 void _kernel_process_exit( void ) {
 
-	unsigned int parent, tmp_current;
+	unsigned int parent;
 
-	// free slot, map parent in, update current, reinstate process
+        // special case - if this is the first process, then the kernel has "finished"
+        if ( current == 0 ) {
+            _kernel_video_print_string( "[IMP OS] finished" );
+            while ( 1 ) {}
+        }
+
+	// free the process slot, map the parent back in, update "current", and "continue" the parent process
 	proc[ current ].free = 1;
 
 	parent = proc[ current ].parent;
-
 	_kernel_mmu_map_process_in( parent, 1,1 );
-
-	tmp_current = current;
 	current = parent;
-	_kernel_process_pop_cpu_state( (unsigned int *) &proc[ tmp_current ].state );
+	_kernel_process_pop_cpu_state( (unsigned int *) &proc[ current ].state );
 
 }

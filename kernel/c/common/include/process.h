@@ -27,7 +27,7 @@
 
 
 
-	// can record 32 registers (AArch64 = x0-x30, SP_EL0, ELR_EL1)
+    // can record up to a maximum of 32 registers (AArch64 = x0-x30, SP_EL0, ELR_EL1)
     typedef struct cpu_state {
         uintptr_t r[ 32 ];
     } cpu_state;
@@ -35,15 +35,16 @@
     typedef struct process {
         int         free;       /* whether or not this process is currently free to be used */
         cpu_state   state;      /* the CPU register state */
-		int			parent;		/* the id of the parent process */
+	int         parent;	/* the id of the parent process */
     } process;
 
 
 
-	void 	_kernel_process_init	( void );
+    void 	_kernel_process_init	( void );
     int 	_kernel_process_begin	( char *filename );
-	void 	_kernel_process_exit	( void );
-
+    void 	_kernel_process_exit	( void );
+    int         _kernel_process_init_cpu_state( cpu_state *state );
+    int         _kernel_process_continue( cpu_state *state );
 
 
 #endif /*PROCESS_H*/
