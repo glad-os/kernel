@@ -17,6 +17,50 @@
 
 
 .global                                                 swi_handler
+.global                                                 swi_temp_cpu_state
+
+
+
+#define                                                 SYS                     0b00011111
+#define                                                 SVC                     0b00010011
+
+
+
+.macro                                                  _SET_MODE               mode
+                                                        MRS                     r1          	, cpsr
+                                                        BIC                     r1          	, r1        	, #0b00011111
+                                                        ORR                     r1          	, r1        	, #\mode
+                                                        MSR                     cpsr            , r1
+.endm
+
+
+
+.macro                                                  _KPUSH_CPU_STATE
+                                                        STMIA                   r0!             , {r1-r12}                              @ PUSH: r1..r12
+
+                                                        _SET_MODE               SYS                                                     @ PUSH: sp, lr
+                                                        MOV                     r4              , sp
+                                                        MOV                     r5              , lr
+                                                        _SET_MODE               SVC
+                                                        STMIA                   r0!             , {r4,r5}
+
+                                                        MRS                     r4              , spsr                                  @ PUSH: cpsr, pc
+                                                        STMIA                   r0!             , {r4,lr}                               
+.endm
+
+
+
+.macro                                                  _KPOP_CPU_STATE
+                                                        LDMIA                   r0!             , {r1-r12}                              @ POP: r1..r12
+
+                                                        _SET_MODE               SYS                                                     @ POP: sp, lr
+                                                        LDMIA                   r0!             , {sp, lr}
+                                                        _SET_MODE               SVC
+
+                                                        LDMIA                   r0!             , {r4,lr}                               @ POP: cpsr, pc
+                                                        MSR                     spsr            , r4
+
+.endm
 
 
 
@@ -32,10 +76,10 @@
 							@ All registers reinstated *except* R0 which carries a status (success/failure) value appropriate to the individual SWI
 							@
 swi_handler:
-                                                        STR                     sp                      , swi_temp_sp                                                   @ stack r1-r12 and lr
-                                                        ADR                     sp                      , swi_temp_cpu_state
-							STMia			sp 			, {r1-r12,lr}
-                                                        LDR                     sp                      , swi_temp_sp
+                                                        STR                     r0                      , swi_temp_cpu_state + 0
+                                                        ADR                     r0                      , swi_temp_cpu_state + 4
+                                                        _KPUSH_CPU_STATE
+                                                        LDR                     r0                      , swi_temp_cpu_state + 0
 							
                                                         CPSIE 			i                                                   					@ OS_ReadC in busy waiting stops interrupts! (consider re-entrant handler in future)
 
@@ -43,15 +87,16 @@ swi_bl_to_handler:
                                                         ADR                     r4                      , swi_function_pointers
 							LDR			r5			, [lr, #-4]							@ get SWI instruction and mask to determine SWI number
 							BIC			r5			, r5		, #0xff << 24
-                                                        ADR                     lr                      , swi_handler_return            @ ahh I think this is "wrong" (do I need to stack LR in some gcc way, or can I "bl" properly here?)
+                                                        ADR                     lr                      , swi_handler_return
                                                         LDR                     pc                      , [r4, r5, LSL #2]
 
 
 swi_handler_return:
-                                                        STR                     sp                      , swi_temp_sp                                                   @ restore r1-r12 and lr
-                                                        ADR                     sp                      , swi_temp_cpu_state + (13*4)
-							LDMia			sp 			, {r1-r12,lr}
-                                                        LDR                     sp                      , swi_temp_sp
+                                                        STR                     r0                      , swi_temp_cpu_state + 0
+                                                        ADR                     r0                      , swi_temp_cpu_state + 4
+                                                        _KPOP_CPU_STATE
+                                                        LDR                     r0                      , swi_temp_cpu_state + 0
+
 						    	MOVS                    pc                      , lr    							@ get SPSR and LR ready, then ERET (EL1->EL0)
 
 

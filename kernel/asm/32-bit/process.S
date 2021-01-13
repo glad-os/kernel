@@ -16,6 +16,9 @@
 
 
 
+
+
+
 .global                                     _kernel_process_push_cpu_state
 .global                                     _kernel_process_pop_cpu_state
 .global                                     _kernel_process_continue
@@ -25,7 +28,19 @@
 #define                                     SYS                 0b00011111
 #define                                     SVC                 0b00010011
 
+.macro                                      _POP_CPU_STATE
+                                            ADD                 r0              , r0        , #4                        @ (r0 is not restored)
+                                            LDMIA               r0!             , {r1-r12}                              @ POP: r1..r12
+                                            
+                                            _SET_MODE           SYS                                                     @ POP: sp, lr
+                                            LDMIA               r0!             , {sp, lr}
+                                            _SET_MODE           SVC
 
+                                            LDMIA               r0!             , {r4,lr}                               @ POP: cpsr, pc
+                                            MSR                 spsr            , r4
+
+                                            MOVS                pc              , lr
+.endm
 
 .macro                                      _SET_MODE           mode
                                             MRS         	r1          	, cpsr
@@ -36,35 +51,32 @@
 
 
 
-.macro                                      _KERNEL_PROCESS_PUSH_CPU_STATE
-
-                                            STMFD               sp!             , {r0-r12}                              @ STACK: r0  ... r12
-                                            
-                                            _SET_MODE           SYS                                                     @ STACK: r13 ... r14
-                                            MOV                 r4              , r13
-                                            MOV                 r5              , r14
-                                            _SET_MODE           SVC
-                                            STMFD               sp!             , {r4,r5}
-                                            
-                                            MRS                 r4              , spsr                                  @ STACK: spsr, pc
-                                            STMFD               sp!             , {r4,lr}                               
-.endm
-
-
-
                                             @
                                             @ _kernel_process_push_cpu_state
                                             @
-                                            @ ?
+                                            @ Takes the currently pushed CPU state (at swi_temp_cpu_state) and copies it into the 
+                                            @ CPU state struct pointed to by r0.
                                             @
                                             @ On entry:
-                                            @ -
+                                            @ r0 = pointer to a process's CPU state struct
                                             @
                                             @ On exit:
-                                            @ The stack has had (User Mode) r0..r14, CPSR and PC pushed onto it
+                                            @ The CPU state has had the register set preserved (USER: r1-r12,sp,lr,cpsr,pc [note: r0 is never preserved])
                                             @
 _kernel_process_push_cpu_state:
-                                            _KERNEL_PROCESS_PUSH_CPU_STATE
+                                            LDR                 r1              , temp_state_ptr
+                                            MOV                 r2              , #17                                   @ 17 registers are in play (r0-r12,sp,lr,cpsr,pc = 17)
+                                            
+_kernel_process_push_cpu_state_loop:
+                                            LDR                 r3              , [r1]      , #4
+                                            STR                 r3              , [r0]      , #4
+                                            SUBS                r2              , r2        , #1
+                                            BNE                 _kernel_process_push_cpu_state_loop
+                                            MOV                 pc              , lr
+                                            
+
+
+temp_state_ptr:                             .word       swi_temp_cpu_state
 
 
 
@@ -74,33 +86,14 @@ _kernel_process_push_cpu_state:
                                             @ ?
                                             @
                                             @ On entry:
-                                            @ r0 = pointer to kernel memory where registers were preserved
+                                            @ r0 = pointer to a process's CPU state struct
                                             @
                                             @ On exit:
                                             @ ?
                                             @
 _kernel_process_pop_cpu_state:
-                                            MRS         	r1          	, cpsr                                  @ switch to SYS mode (gain access to USR mode register bank)
-                                            BIC         	r1          	, r1        	, #0b00011111
-                                            ORR         	r1          	, r1        	, #0b00011111
-                                            MSR         	cpsr        	, r1
-
-                                            @LDR                r11             , [r0, #0x0]
-                                            @LDR                r12             , [r0, #0x4]
-                                            @LDR                sp              , [r0, #0x8]
-                                            @LDR                r3              , [r0, #0xc]
-
-                                            MRS         	r1          	, cpsr                                  @ switch to SVC mode
-                                            BIC         	r1          	, r1        	, #0b00011111
-                                            ORR         	r1          	, r1        	, #0b00010011
-                                            MSR                 cpsr            , r1
-
-                                            // ERET will return from the SWI Exception and should now safely return to userland
-                                            // need to consider that we jump out of the kernel without 'undoing' unwanted SVC stack work at this point
-                                            @LDR                r0              , svc_sp_value
-                                            @LDR                sp              , [r0]
-                                            @MOV                lr              , r3
-                                            ERET
+                                            _POP_CPU_STATE
+                                            MOVS                pc      , lr
 
 
 

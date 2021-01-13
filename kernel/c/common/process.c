@@ -105,6 +105,13 @@ int _kernel_process_begin( char *filename ) {
 		return slot;
 	}
 
+        // if this *isn't* the first process to be run which will have a slot of '0')
+        // then this is one process calling upon another, so snapshot the *current* process
+        // first (as when this new process calls OS_ProcessExit, we need to resume the current one)
+        if ( slot != 0 ) {
+            _kernel_process_push_cpu_state( (unsigned int *) &proc[ current ].state );           
+        }
+
 	// claim, record parent id, initialise cpu state
 	proc[ slot ].free   = 0;
 	proc[ slot ].parent = current;
@@ -115,7 +122,7 @@ int _kernel_process_begin( char *filename ) {
 	current = slot;
 	_kernel_mmu_map_process_in( slot, 0,0 );
 	_kernel_fat32_load_file( filename_copy, (unsigned char *) ( 4 * MBYTE ) );
-	_kernel_process_continue( state );
+	_kernel_process_pop_cpu_state( (unsigned int *) state );
 
 	return slot;
 
@@ -129,20 +136,22 @@ int _kernel_process_begin( char *filename ) {
  *
  * Initialises the CPU state of a given process (ready to run for the first time)
  *
+ * ORDER := r0-r12,sp,lr,cpsr,pc
+ *
  */
 int _kernel_process_init_cpu_state( cpu_state *state ) {
 
-    int r;
+    int i;
 
-    for ( r = 0; r <= 12; r++ ) {
-        state->r[0] = 0;
+    for ( i = 0; i <= 12; i++ ) {
+        state->r[i] = 0;
     }
 
     // sp, lr, pc and cpsr require specific values at startup
-    state->r[13] = 8 * MBYTE;
-    state->r[14] = 0;
-    state->r[15] = 4 * MBYTE;
-    state->r[16] = 16; /* 16 = USR mode */ // @todo what should the default CPSR value be for a userland process?
+    state->r[13] = 8 * MBYTE;       // sp
+    state->r[14] = 0;               // lr
+    state->r[15] = 16;              // cpsr
+    state->r[16] = 4 * MBYTE;       // pc
 
 }
 
