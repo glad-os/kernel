@@ -122,6 +122,7 @@ int _kernel_process_begin( char *filename ) {
 	current = slot;
 	_kernel_mmu_map_process_in( slot, 0,0 );
 	_kernel_fat32_load_file( filename_copy, (unsigned char *) ( 4 * MBYTE ) );
+_kernel_video_print_string( "Let's go...\n" );
 	_kernel_process_pop_cpu_state( (unsigned int *) state );
 
 	return slot;

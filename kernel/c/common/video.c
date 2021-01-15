@@ -392,7 +392,7 @@ void _kernel_video_set_character_position( unsigned int x, unsigned int y )
  * Displays the specified zero-terminated character string.
  *
  */
-void _kernel_video_print_string( char *string )
+int _kernel_video_print_string( char *string )
 {
 
 	unsigned int index, chr;
@@ -401,8 +401,10 @@ void _kernel_video_print_string( char *string )
 	while ( ( chr = string[ index++ ] ) )
 	{
 		_kernel_video_print_char( chr );
-		if ( chr == 0x00 ) { return; }
+		if ( chr == 0x00 ) { return 0; }
 	}
+
+    return 0;
 
 }
 
@@ -629,6 +631,6 @@ void _kernel_video_print_hex( unsigned int h )
 		toprint[ i ] = c[ ( h >> ( ( 7-i ) << 2 ) ) & 0xf ];
 	}
 
-	_kernel_video_print_string( toprint );
+	int result = _kernel_video_print_string( toprint );
 
 }

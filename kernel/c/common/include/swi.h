@@ -25,16 +25,13 @@
 
 
 
-	unsigned int _kernel_swi_os_setmode( void );
-	unsigned int _kernel_swi_os_setcolour( unsigned int f, unsigned int r, unsigned int g, unsigned int b );
-	unsigned int _kernel_swi_os_clearscreen( void );
-	unsigned int _kernel_swi_os_putpixel( void );
-	unsigned int _kernel_swi_os_getpixel( void );
-	unsigned int _kernel_swi_os_setcursorposition( void );
-	unsigned int _kernel_swi_os_printchar( char c );
 	unsigned int _kernel_swi_os_printstring( char *s );
-	unsigned int _kernel_swi_os_readvideovariables( void );
+	unsigned int _kernel_swi_os_printchar( char c );
+	unsigned int _kernel_swi_os_clearscreen( void );
+	unsigned int _kernel_swi_os_setcolour( unsigned int f, unsigned int r, unsigned int g, unsigned int b );
+
 	unsigned int _kernel_swi_os_readc( void );
+
     	unsigned int _kernel_swi_os_processbegin( char *name );
     	unsigned int _kernel_swi_os_processexit( void );
 

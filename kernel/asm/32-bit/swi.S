@@ -27,10 +27,10 @@
 
 
 .macro                                                  _SET_MODE               mode
-                                                        MRS                     r1          	, cpsr
-                                                        BIC                     r1          	, r1        	, #0b00011111
-                                                        ORR                     r1          	, r1        	, #\mode
-                                                        MSR                     cpsr            , r1
+                                                        MRS                     r4          	, cpsr
+                                                        BIC                     r4          	, r4        	, #0b00011111
+                                                        ORR                     r4          	, r4        	, #\mode
+                                                        MSR                     cpsr            , r4
 .endm
 
 
@@ -90,7 +90,6 @@ swi_bl_to_handler:
                                                         ADR                     lr                      , swi_handler_return
                                                         LDR                     pc                      , [r4, r5, LSL #2]
 
-
 swi_handler_return:
                                                         STR                     r0                      , swi_temp_cpu_state + 0
                                                         ADR                     r0                      , swi_temp_cpu_state + 4
@@ -102,20 +101,17 @@ swi_handler_return:
 
 
 swi_temp_sp:                                            .word                   0
-swi_temp_cpu_state:                                     .space                  16 * 4                                                                                  @ r1-12, sp, lr, pc, cpsr (17 registers)
+swi_temp_cpu_state:                                     .space                  17 * 4                                                                                  @ r0-12, sp, lr, pc, cpsr (17 registers)
 
 
 
 swi_function_pointers:
-                                                        .word                   _kernel_swi_os_setmode
-                                                        .word                   _kernel_swi_os_setcolour
-                                                        .word                   _kernel_swi_os_clearscreen
-                                                        .word                   _kernel_swi_os_putpixel
-                                                        .word                   _kernel_swi_os_getpixel
-                                                        .word                   _kernel_swi_os_setcursorposition
-                                                        .word                   _kernel_swi_os_printchar
                                                         .word                   _kernel_swi_os_printstring
-                                                        .word                   _kernel_swi_os_readvideovariables
+                                                        .word                   _kernel_swi_os_printchar
+                                                        .word                   _kernel_swi_os_clearscreen
+                                                        .word                   _kernel_swi_os_setcolour
+
                                                         .word                   _kernel_swi_os_readc
+
                                                         .word                   _kernel_swi_os_processbegin
                                                         .word                   _kernel_swi_os_processexit

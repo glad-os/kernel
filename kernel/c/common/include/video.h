@@ -31,7 +31,7 @@
 	void 			_kernel_video_cls 					( void );
 	void 			_kernel_video_set_colour 				( unsigned int foreground, unsigned int colour );
 	void 			_kernel_video_set_character_position			( unsigned int x, unsigned int y );
-	void 			_kernel_video_print_string				( char *string );
+	int 			_kernel_video_print_string				( char *string );
 	void 			_kernel_video_print_decimal				( unsigned int number );
 	void 			_kernel_video_print_char				( char c );
 	void 			_kernel_video_plot_pixel				( unsigned int x, unsigned int y, unsigned int colour );
