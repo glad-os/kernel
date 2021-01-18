@@ -63,6 +63,7 @@ temp_state_ptr:
                                     @ ?
                                     @
 _kernel_process_pop_cpu_state:
+                                    ADD r0, r0, #4
                                     _POP_CPU_STATE
                                     MOVS                pc      , lr
 
