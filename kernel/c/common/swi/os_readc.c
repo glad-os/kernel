@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "swi.h"
+
 #include "keyboard.h"
-#include "video.h"
+
 
 unsigned int _kernel_swi_os_readc( void )
 {
@@ -24,7 +24,6 @@ unsigned int _kernel_swi_os_readc( void )
 	unsigned int c;
 
 	c = _kernel_keyboard_readc();
-
 	return c;
 
 }

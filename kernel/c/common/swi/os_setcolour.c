@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-#include <stdint.h>
-#include "swi.h"
+
 #include "video.h"
+
 
 unsigned int _kernel_swi_os_setcolour( unsigned int f, unsigned int r, unsigned int g, unsigned int b )
 {
 
-        //_kernel_video_print_hex( f ); _kernel_video_print_string( "\n" );
-        //_kernel_video_print_hex( r ); _kernel_video_print_string( "\n" );
-        //_kernel_video_print_hex( g ); _kernel_video_print_string( "\n" );
-        //_kernel_video_print_hex( b ); _kernel_video_print_string( "\n" );
 	_kernel_video_set_colour( f, (r<<16) + (g<<8) + b );
-
 	return 0;
 
 }
-

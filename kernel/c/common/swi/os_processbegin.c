@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-#include "swi.h"
+
 #include "process.h"
-#include <stdint.h>
+
 
 unsigned int _kernel_swi_os_processbegin( char *name )
 {
 
 	_kernel_process_begin( name );
-
 	return 0;
 
 }

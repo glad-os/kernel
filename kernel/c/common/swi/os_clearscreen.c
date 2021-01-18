@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "swi.h"
+
 #include "video.h"
 
 
@@ -22,7 +22,6 @@ unsigned int _kernel_swi_os_clearscreen( void )
 {
 
 	_kernel_video_cls();
-
 	return 0;
 
 }

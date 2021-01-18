@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-#include "swi.h"
+
 #include "process.h"
+
 
 unsigned int _kernel_swi_os_processexit( void )
 {
 
 	_kernel_process_exit();
-
     return 0;
 
 }

@@ -15,19 +15,13 @@
  */
 
 
-
-#include <stdint.h>
-
-#include "swi.h"
 #include "video.h"
-
 
 
 unsigned int _kernel_swi_os_printstring( char *s )
 {
 
 	_kernel_video_print_string( s );
-
 	return 0x12345678;
 
 }

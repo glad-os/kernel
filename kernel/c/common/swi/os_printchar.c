@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-#include "swi.h"
+
 #include "video.h"
-#include <stdint.h>
+
 
 unsigned int _kernel_swi_os_printchar( char c )
 {
 
 	_kernel_video_print_char( c );
-
 	return 0;
 
 }
