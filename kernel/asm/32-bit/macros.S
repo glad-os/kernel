@@ -33,10 +33,12 @@
                                  *
                                  */
 .macro                          _SET_MODE       mode
+
                                 MRS             r4      , cpsr
                                 BIC             r4      , r4, #0b00011111
                                 ORR             r4      , r4, #\mode
                                 MSR             cpsr    , r4
+
 .endm
 
 
@@ -56,6 +58,7 @@
                                  *
                                  */
 .macro                          _PUSH_CPU_STATE
+
                                 STMIA           r0!     , {r1-r12}                                  // PUSH: r1..r12
 
                                 _SET_MODE       SYS                                                 // PUSH: USR_sp, USR_lr
@@ -65,7 +68,8 @@
                                 STMIA           r0!     , {r5, r6}
 
                                 MRS             r4      , spsr                                      // PUSH: USR_cpsr, USR_pc
-                                STMIA           r0!     , {r4, lr}                               
+                                STMIA           r0!     , {r4, lr}
+
 .endm
 
 
@@ -90,16 +94,18 @@
                                  *
                                  */
 .macro                          _POP_CPU_STATE
-                                LDMIA           r0!     , {r1-r12}                                  // POP: r1..r12
 
-                                STMFD           sp!     , {r4}                                      // stack r4 (about to be used for scratch-space)
+                                LDMIA           r0!     , {r1-r12}                                  // POP: r1-r12
+
+                                STMFD           sp!     , {r4}                                      // stack r4 (scratch-space)
 
                                 _SET_MODE       SYS                                                 // POP: USR_sp, USR_lr
                                 LDMIA           r0!     , {sp, lr}
 
-                                _SET_MODE       SVC                                                 // POP: SVC_spsr, SVC_lr
+                                _SET_MODE       SVC                                                 // POP: SVC_spsr, SVC_lr (will become USR_cpsr, USR_pc)
                                 LDMIA           r0!     , {r4, lr}
                                 MSR             spsr    , r4
 
                                 LDMFD           sp!     , {r4}                                      // restore r4
+
 .endm
