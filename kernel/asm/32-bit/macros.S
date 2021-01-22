@@ -25,8 +25,11 @@
                                  *
                                  * Changes the current CPSR to the required mode (USER, SYS, etc.)
                                  *
-                                 * On entry:
+                                 * Parameters:
                                  * mode = required mode
+                                 *
+                                 * On entry:
+                                 * -
                                  *
                                  * On exit:
                                  * r4 = corrupted
@@ -46,29 +49,35 @@
                                  *
                                  * _PUSH_CPU_STATE
                                  *
-                                 * Preserves the CPU's state (register set) in the given memory area.
-                                 * "state" is defined as r0-r12,sp,lr,psr,pc
+                                 * Preserves the CPU's state (register set) in the current process's CPU state struct.
+                                 * "state" is defined as USR mode's r0-r12, sp, lr, cpsr, and pc registers.
                                  *
-                                 * On entry:
-                                 * r0 = pointer to area of memory where state is to be stored + 4
-                                 *      (r0 has already been preserved, prior to entry)
-                                 *
-                                 * On exit:
-                                 * r0, r4-r6 = corrupted
+                                 * Parameters:
+                                 * scratch       = address of 4 bytes (word-aligned) in memory (scratch space)
+                                 * cpu_state_ptr = pointer to a cpu_state struct in memory, where state is to be stored
                                  *
                                  */
-.macro                          _PUSH_CPU_STATE
+.macro                          _PUSH_CPU_STATE scratch, cpu_state_ptr
 
-                                STMIA           r0!     , {r1-r12}                                  // PUSH: r1..r12
+                                STR             sp      , \scratch + 0                              // preserve SP
+
+                                ADR             sp      , \cpu_state_ptr                            // use SP to point at the cpu_state struct
+                                LDR             sp      , [sp]
+
+                                STMIA           sp      , {r0-r12}                                  // PUSH: r0-r12
 
                                 _SET_MODE       SYS                                                 // PUSH: USR_sp, USR_lr
-                                MOV             r5      , sp
+                                MOV             r5      , sp    
                                 MOV             r6      , lr
                                 _SET_MODE       SVC
-                                STMIA           r0!     , {r5, r6}
+                                STR             r5      , [sp, #13*4]
+                                STR             r6      , [sp, #14*4]
 
-                                MRS             r4      , spsr                                      // PUSH: USR_cpsr, USR_pc
-                                STMIA           r0!     , {r4, lr}
+                                MRS             r5      , spsr                                      // PUSH: USR_cpsr, USR_pc                                   
+                                STR             r5      , [sp, #15*4]                               
+                                STR             lr      , [sp, #16*4]
+
+                                LDR             sp      , \scratch + 0                              // reinstate SP
 
 .endm
 
@@ -77,35 +86,28 @@
                                  *
                                  * _POP_CPU_STATE
                                  *
-                                 * Reinstates the CPU's state (register set) from the given memory area
+                                 * Reinstates the CPU's state (register set) in the current process's CPU state struct
                                  * "state" is defined as r0-r12,sp,lr,psr,pc
                                  *
                                  * On entry:
-                                 * r0 = pointer to area of memory where state is to be reinstated from + 4
-                                 *      (r0 will be reinstated separately, after exit)
+                                 * r0 = pointer to state to be popped
                                  *
                                  * On exit:
-                                 * r0       = corrupted
-                                 * r1-r12   = restored
-                                 * USR_sp   = restored
-                                 * USR_lr   = restored
-                                 * SVC_spsr = restored (USR_cpsr)
-                                 * SVC_lr   = restored (USR_pc)
+                                 * -
                                  *
                                  */
 .macro                          _POP_CPU_STATE
 
-                                LDMIA           r0!     , {r1-r12}                                  // POP: r1-r12
-
-                                STMFD           sp!     , {r4}                                      // stack r4 (scratch-space)
-
                                 _SET_MODE       SYS                                                 // POP: USR_sp, USR_lr
-                                LDMIA           r0!     , {sp, lr}
+                                LDR             sp      , [r0, #13*4]
+                                LDR             lr      , [r0, #14*4]
 
                                 _SET_MODE       SVC                                                 // POP: SVC_spsr, SVC_lr (will become USR_cpsr, USR_pc)
-                                LDMIA           r0!     , {r4, lr}
+                                LDR             r4      , [r0, #15*4]
+                                LDR             lr      , [r0, #16*4]
                                 MSR             spsr    , r4
 
-                                LDMFD           sp!     , {r4}                                      // restore r4
+                                LDMIA           r0      , {r0-r12}                                  // POP: r0-r12
+
 
 .endm

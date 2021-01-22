@@ -331,15 +331,11 @@ void _kernel_video_display_memory( unsigned int tag )
 void _kernel_video_cls( void )
 {
 
-	unsigned int x, y;
+    // for now, hardwire this - 
+	unsigned int src, dst, kb;
 
-	for ( y = 0; y < height; y++ )
-	{
-		for ( x = 0; x < width; x++ )
-		{
-			_kernel_video_plot_pixel( x, y, colour_background );
-		}
-	}
+	kb = (VIDEO_WIDTH * 4 * (VIDEO_HEIGHT-8)) / 1024;
+	blank1k( video_ram_address, kb );
 
 	// cls automatically resets the character position to top-left
 	_kernel_video_set_character_position( 0,0 );
@@ -585,29 +581,21 @@ void _kernel_video_print_decimal( unsigned int number )
 void _kernel_video_scroll_up( void )
 {
 
-	// [64-bit] this code needs sorting - embedded 32-bit ARM instructions no good
-	/*
 	unsigned int src, dst, kb;
 
-	kb = (VIDEO_WIDTH * 4 * (VIDEO_HEIGHT-8)) / 1024;
 	src = video_ram_address + ( VIDEO_WIDTH * 4 * 8);
-	dst = video_ram_address;
-	asm ( "mov r0, %0" : : "r" ( src ) );
-	asm ( "mov r1, %0" : : "r" ( dst ) );
-	while ( kb-- )
-	{
-		move1k();
-	}
+    dst = video_ram_address;
+	kb = (VIDEO_WIDTH * 4 * (VIDEO_HEIGHT-8)) / 1024;
+    while ( kb-- )
+    {
+    	move1k( src, dst );
+        src += 1024; dst += 1024;
+    }
 
-	// blank the bottom row
-	src = video_ram_address + ( VIDEO_WIDTH*4 * (VIDEO_HEIGHT-8) );
-	kb = ( VIDEO_WIDTH * 4 * 8 ) / 1024;
-	asm ( "mov r1, %0" : : "r" ( src ) );
-	while ( kb-- )
-	{
-		blank1k();
-	}
-	*/
+    // blank the bottom row
+    src = video_ram_address + ( VIDEO_WIDTH*4 * (VIDEO_HEIGHT-8) );
+    kb = ( VIDEO_WIDTH * 4 * 8 ) / 1024;
+	blank1k( src, kb );
 
 }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-
+#include "process.h"
 
 #ifndef START_H_
 #define START_H_
@@ -26,13 +26,13 @@
 	extern void 			put_word( unsigned int, unsigned int );
 	extern unsigned int		get_word( unsigned int );
 
-	extern void 			move1k( void );
-	extern void 			blank1k( void );
+	extern void 			move1k( unsigned int, unsigned int );
+	extern void 			blank1k( unsigned int, unsigned int );
 
 	extern void 			delay_loop( unsigned int );
 
 	extern void 			_kernel_process_push_cpu_state( unsigned int * );	
-	extern void 			_kernel_process_pop_cpu_state( unsigned int * );
+	extern void 			_kernel_process_pop_cpu_state( cpu_state * );
 	extern void 			_kernel_process_start( void );
 
 	extern void 			_kernel_mmu_invalidate_tlb( void );

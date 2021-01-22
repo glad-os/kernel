@@ -83,6 +83,7 @@ delay_loop:
                                 //
 move1k:
                                 STMFD           sp!     , {r2-r11}
+
                                 LDMIA           r0!		, {r2-r11}; STMIA r1! , {r2-r11}
                                 LDMIA           r0!		, {r2-r11}; STMIA r1! , {r2-r11}
                                 LDMIA           r0!		, {r2-r11}; STMIA r1! , {r2-r11}
@@ -109,6 +110,7 @@ move1k:
                                 LDMIA           r0!		, {r2-r11}; STMIA r1! , {r2-r11}
                                 LDMIA           r0!		, {r2-r11}; STMIA r1! , {r2-r11}
                                 LDMIA           r0!		, {r2-r7};  STMIA r1! , {r2-r7}
+
                                 LDMFD           sp!		, {r2-r11}
                                 MOV             pc		, lr
 
@@ -119,31 +121,37 @@ move1k:
                                 // Blanks (ie. sets to zero) the memory range identified by r0 (lower) and r1 (upper).
                                 //
                                 // On entry:
-                                // r1 = pointer to first memory location
+                                // r0 = pointer to memory to blank
+                                // r1 = number of 1kb blocks to blank
                                 //
                                 // On exit:
                                 // r0-r1 = corrupted
                                 //
 blank1k:
                                 STMFD           sp!     , {r3-r12}
+blank1k_loop:
                                 MOV             r2      , #0
                                 MOV             r3      , r2;		MOV 		r4		, r2
                                 MOV             r5      , r2;		MOV 		r6		, r2
                                 MOV             r7      , r2;		MOV 		r8		, r2
                                 MOV             r9      , r2;		MOV 		r10		, r2
                                 MOV             r11     , r2;		MOV 		r12		, r2
-                                STMIA           r1!     , {r3-r12};	STMIA		r1!		, {r3-r12}
-                                STMIA           r1!     , {r3-r12};	STMIA		r1!		, {r3-r12}
-                                STMIA           r1!     , {r3-r12};	STMIA		r1!		, {r3-r12}
-                                STMIA           r1!     , {r3-r12};	STMIA		r1!		, {r3-r12}
-                                STMIA           r1!     , {r3-r12};	STMIA		r1!		, {r3-r12}
-                                STMIA           r1!     , {r3-r12};	STMIA		r1!		, {r3-r12}
-                                STMIA           r1!     , {r3-r12};	STMIA		r1!		, {r3-r12}
-                                STMIA           r1!     , {r3-r12};	STMIA		r1!		, {r3-r12}
-                                STMIA           r1!     , {r3-r12};	STMIA		r1!		, {r3-r12}
-                                STMIA           r1!     , {r3-r12};	STMIA		r1!		, {r3-r12}
-                                STMIA           r1!     , {r3-r12};	STMIA		r1!		, {r3-r12}
-                                STMIA           r1!     , {r3-r12};	STMIA		r1!		, {r3-r12}
-                                STMIA           r1!     , {r3-r12};	STMIA		r1!		, {r3-r8}
+                                STMIA           r0!     , {r3-r12};	STMIA		r0!		, {r3-r12}
+                                STMIA           r0!     , {r3-r12};	STMIA		r0!		, {r3-r12}
+                                STMIA           r0!     , {r3-r12};	STMIA		r0!		, {r3-r12}
+                                STMIA           r0!     , {r3-r12};	STMIA		r0!		, {r3-r12}
+                                STMIA           r0!     , {r3-r12};	STMIA		r0!		, {r3-r12}
+                                STMIA           r0!     , {r3-r12};	STMIA		r0!		, {r3-r12}
+                                STMIA           r0!     , {r3-r12};	STMIA		r0!		, {r3-r12}
+                                STMIA           r0!     , {r3-r12};	STMIA		r0!		, {r3-r12}
+                                STMIA           r0!     , {r3-r12};	STMIA		r0!		, {r3-r12}
+                                STMIA           r0!     , {r3-r12};	STMIA		r0!		, {r3-r12}
+                                STMIA           r0!     , {r3-r12};	STMIA		r0!		, {r3-r12}
+                                STMIA           r0!     , {r3-r12};	STMIA		r0!		, {r3-r12}
+                                STMIA           r0!     , {r3-r12};	STMIA		r0!		, {r3-r8}
+
+                                SUBS            r1      , r1 , #1
+                                BNE             blank1k_loop
+
                                 LDMFD           sp!     , {r3-r12}
                                 MOV             pc      , lr

@@ -15,7 +15,6 @@
  */
 
 
-
 #include "const.h"
 #include "process.h"
 #include "fat32.h"
@@ -25,14 +24,13 @@
 #include "video.h"
 
 
-
 // IMP OS manages up to 16 processes for now
 process		proc[ MAX_PROCESSES ];
 int 		current;
-char 		filename_copy[ 16 ];
+char        filename_copy[ 16 ];
+
 
 int _kernel_process_find_free_slot( void );
-
 
 
 /**
@@ -51,11 +49,11 @@ void _kernel_process_init( void )
 		proc[ i ].free = 1;
 	}
 
-	// @todo consider the appropriate initial value here
+	// @todo consider the appropriate initial values here
 	current = 0;
+    current_process_state = &proc[ current ].state;
 
 }
-
 
 
 /**
@@ -81,7 +79,6 @@ int _kernel_process_find_free_slot( void ) {
 }
 
 
-
 /**
  *
  * _kernel_process_begin
@@ -93,42 +90,37 @@ int _kernel_process_find_free_slot( void ) {
  */
 int _kernel_process_begin( char *filename ) {
 
-	int slot;
-        cpu_state *state;
+    int slot;
 
-	// make a copy of the filename before the process is mapped out
-	_kernel_strcpy( filename_copy, filename );
+    // make a copy of the filename before the process is mapped out
+    _kernel_strcpy( filename_copy, filename );
 
-	// find process slot
-        slot = _kernel_process_find_free_slot();
-	if ( slot == ERROR_PROCESS_SLOT_UNAVAILABLE ) {
-		return slot;
-	}
+    // find process slot
+    slot = _kernel_process_find_free_slot();
+    if ( slot == ERROR_PROCESS_SLOT_UNAVAILABLE ) {
+        return slot;
+    }
 
-        // if this *isn't* the first process to be run which will have a slot of '0')
-        // then this is one process calling upon another, so snapshot the *current* process
-        // first (as when this new process calls OS_ProcessExit, we need to resume the current one)
-        if ( slot != 0 ) {
-            _kernel_process_push_cpu_state( (unsigned int *) &proc[ current ].state );           
-        }
+    // claim, record parent id, initialise cpu state
+    proc[ slot ].free   = 0;
+    proc[ slot ].parent = current;
+    current_process_state = &proc[ slot ].state;
+    _kernel_process_init_cpu_state( current_process_state );
 
-	// claim, record parent id, initialise cpu state
-	proc[ slot ].free   = 0;
-	proc[ slot ].parent = current;
-        state = &proc[ slot ].state;
-        _kernel_process_init_cpu_state( state );
+    // update current, map memory in, install binary, and officially "continue" the process at this point
+    current = slot;
 
-	// update current, map memory in, install binary, and officially "continue" the process at this point
-	current = slot;
-	_kernel_mmu_map_process_in( slot, 0,0 );
-	_kernel_fat32_load_file( filename_copy, (unsigned char *) ( 4 * MBYTE ) );
-_kernel_video_print_string( "Let's go...\n" );
-	_kernel_process_pop_cpu_state( (unsigned int *) state );
+    // currently testing cache/buffer being switched on (invalidate I&D caches completely for now)
+    _kernel_mmu_map_process_in( slot, 1,1 );
+    _kernel_fat32_load_file( filename_copy, (unsigned char *) ( 4 * MBYTE ) );
+    _kernel_mmu_invalidate_i_cache();
+	_kernel_mmu_clean_l1_d_cache();
+	_kernel_mmu_clean_l2_d_cache();
+    _kernel_process_pop_cpu_state( current_process_state );
 
-	return slot;
+    return slot;
 
 }
-
 
 
 /**
@@ -157,7 +149,6 @@ int _kernel_process_init_cpu_state( cpu_state *state ) {
 }
 
 
-
 /**
  *
  * _kernel_process_exit
@@ -181,6 +172,7 @@ void _kernel_process_exit( void ) {
 	parent = proc[ current ].parent;
 	_kernel_mmu_map_process_in( parent, 1,1 );
 	current = parent;
-	_kernel_process_pop_cpu_state( (unsigned int *) &proc[ current ].state );
+    current_process_state = &proc[ parent ].state;
+	_kernel_process_pop_cpu_state( current_process_state );
 
 }

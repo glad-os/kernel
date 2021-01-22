@@ -106,9 +106,9 @@ void _kernel_mmu_init( void )
 
 		cache = buffer = 1;
 
-		// memory coherent in page 2 (2Mb), and also from 944Mb+ (where Kernel/ARM stuff resides)
+		// memory coherent in page 2 (2Mb), and also from 946Mb+ (where kernel data area resides)
 		if ( i ==   2 ) { cache = 0; buffer = 0; }
-		if ( i >= 944 ) { cache = 0; buffer = 0; }
+		if ( i >= 946 ) { cache = 0; buffer = 0; }
 
 		// [ARM DDI 0487A.f / G4-4113]
 		_kernel_mmu_map_va_section( i, i, cache, buffer );

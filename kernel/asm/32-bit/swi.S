@@ -16,7 +16,7 @@
 
 
 .global                         swi_handler
-.global                         swi_temp_cpu_state
+.global                         current_process_state
 
 
 #include                        "macros.S"
@@ -34,14 +34,11 @@
                                 // All registers reinstated *except* R0 which carries a status (success/failure) value appropriate to the individual SWI
                                 //
 swi_handler:
-                                STR             r0      , swi_temp_cpu_state + 0
-                                ADR             r0      , swi_temp_cpu_state + 4
-                                _PUSH_CPU_STATE
-                                LDR             r0      , swi_temp_cpu_state + 0
+                                _PUSH_CPU_STATE swi_sp_backup, current_process_state                // PUSH cpu state
 
-                                CPSIE           i                                                   // OS_ReadC in busy waiting stops interrupts! (consider re-entrant handler in future)
+                                CPSIE           i
 
-swi_bl_to_handler:
+swi_dispatch_to_handler:
                                 ADR             r4      , swi_function_pointers
                                 LDR             r5      , [lr, #-4]                                 // get SWI instruction and mask to determine SWI number
                                 BIC             r5      , r5, #0xff << 24
@@ -49,18 +46,18 @@ swi_bl_to_handler:
                                 LDR             pc      , [r4, r5, LSL #2]
 
 swi_handler_return:
-                                STR             r0      , swi_temp_cpu_state + 0
-                                ADR             r0      , swi_temp_cpu_state + 4
+                                STR             r0      , swi_return_value                          // preserve r0 (this is the return value)
+
+                                LDR             r0      , current_process_state                     // POP cpu state
                                 _POP_CPU_STATE
-                                LDR             r0      , swi_temp_cpu_state + 0
 
-                                MOVS            pc      , lr                                        // get SPSR and LR ready, then ERET (EL1->EL0)
+                                LDR             r0      , swi_return_value                          // reinstate the return value, and return...
+                                MOVS            pc      , lr
 
 
-swi_temp_sp:                        
-                                .word           0
-swi_temp_cpu_state:                 
-                                .space          17 * 4                                              // r0-12, sp, lr, pc, cpsr (17 registers)
+swi_return_value:               .word           0
+swi_sp_backup:                  .word           0
+current_process_state:          .word           0
 
 
 swi_function_pointers:
