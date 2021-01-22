@@ -16,42 +16,42 @@
 
 
 
-.global 						irq_handler
-.global							_kernel_interrupt_enable_interrupts
+.global                         irq_handler
+.global                         _kernel_interrupt_enable_interrupts
 
 
 
-							//
-							// irq_handler
-							//
-							// The IRQ handler code, called to service any individual IRQ that arrives at the ARM core.
-							//
-							// On entry:
-							// -
-							//
-							// On exit:
-							// -
-							//
-							// References:
-							// [1] http://www.ic.unicamp.br/~celio/mc404-2013/arm-manuals/ARM_exception_slides.pdf
-							// [2] F7.1.64 LDM (exception return) [ARM Architecture Reference Manual]
-							//
+                                //
+                                // irq_handler
+                                //
+                                // The IRQ handler code, called to service any individual IRQ that arrives at the ARM core.
+                                //
+                                // On entry:
+                                // -
+                                //
+                                // On exit:
+                                // -
+                                //
+                                // References:
+                                // [1] http://www.ic.unicamp.br/~celio/mc404-2013/arm-manuals/ARM_exception_slides.pdf
+                                // [2] F7.1.64 LDM (exception return) [ARM Architecture Reference Manual]
+                                //
 irq_handler:
-							SUB 			lr		,	lr		, #4					// [1] with an IRQ, the PC is 1 instruction beyond the instruction causing the exception
-							STMFD			sp!		,	{r0-r12,lr}
+                                SUB             lr      , lr    , #4                                // [1] with an IRQ, the PC is 1 instruction beyond the instruction causing the exception
+                                STMFD           sp!     , {r0-r12, lr}
 
-							BL			_kernel_interrupt_handler
-							LDMFD			sp!		,	{r0-r12,pc}^						// [2]
+                                BL              _kernel_interrupt_handler
+                                LDMFD           sp!     , {r0-r12, pc}^                             // [2]
 
 
 
 _kernel_interrupt_enable_interrupts:
-							CPSIE			i
-							MOV			pc		,	lr
+                                CPSIE           i
+                                MOV             pc      , lr
 
 
 
 _kernel_interrupt_disable_interrupts:
-							CPSID			if
-							MOV			pc		,	lr
+                                CPSID           if
+                                MOV             pc      , lr
 
