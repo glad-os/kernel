@@ -15,40 +15,61 @@
  */
 
 
-
-.global						swi_handler
-.global						swi_params_ptr_in, swi_params_ptr_out, swi_entrypoint_registers
-.global						saved_svc_sp_entrypoint
+.global                         swi_handler
+.global                         current_process_state
 
 
+#include                        "macros.S"
 
+
+                                //
+                                // swi_handler
+                                //
+                                // The SWI handler code - invoked when an SWI instruction has been executed.
+                                //
+                                // On entry:
+                                // x0 - x3 carry up to 4 parameters for the individual SWI to use
+                                //
+                                // On exit:
+                                // All registers reinstated *except* x0 which carries a status (success/failure) value appropriate to the individual SWI
+                                //
 swi_handler:
+                                _PUSH_CPU_STATE swi_sp_backup, current_process_state                // PUSH cpu state
 
-						STR lr, [sp, #-8]!
+                                MSR             DAIFClr , #0x2                                      // re-enable interrupts as OS_ReadC blocks otherwise
 
-						MSR DAIFClr, #0x2 // re-enable interrupts as OS_ReadC blocks otherwise (this is what was missing yesterday - systimer can now continue!)
+swi_dispatch_to_handler:
+                                ADR             x4      , swi_function_pointers
 
-						LDR			x4			, =swi_params_ptr_in						// stack r0 as this points to the _kernel_regs struct (in)
-						STR			x0			, [x4]
-						LDR			x4			, =swi_params_ptr_out						// stack r1 as this points to the _kernel_regs struct (out)
-						STR			x1			, [x4]
+                                MRS             x5		, ESR_EL1                                   // get SVC instruction and mask to determine SVC number
+                                AND             x5		, x5, #0xffff
 
-						// take the SVC code from the ESR (Exception Syndrome Register) and pass it in to _kernel_swi_handler
-						MRS			x0			, ESR_EL1
-						AND			x0			, x0		, #0xffff
-						BL			_kernel_swi_handler
+                                ADR             lr      , swi_handler_return
+                                LDR             x4      , [x4, x5, LSL #3]
+                                BR              x4
 
-finish_swi_handler:
-						LDR lr, [sp], #8
-						RET
+swi_handler_return:
+                                ADR             x1      , swi_return_value
+                                STR             x0      , [x1]                                      // preserve x0 (this is the return value)
 
-						
+                                LDR             x0      , current_process_state                     // POP cpu state
+                                _POP_CPU_STATE
 
-						.balign 8
-swi_params_ptr_in:				.dword		0
+                                LDR             x0      , swi_return_value                          // reinstate the return value, and return...
+                                ERET
 
-						.balign 8
-swi_params_ptr_out:				.dword		0
 
-						.balign 8
+                                .balign         8
+swi_return_value:               .dword          0
+swi_sp_backup:                  .dword          0
+current_process_state:          .dword          0
 
+
+swi_function_pointers:
+                                .dword          _kernel_swi_os_printstring
+                                .dword          _kernel_swi_os_printchar
+                                .dword          _kernel_swi_os_clearscreen
+                                .dword          _kernel_swi_os_setcolour
+                                .dword          _kernel_swi_os_readc
+                                .dword          _kernel_swi_os_processbegin
+                                .dword          _kernel_swi_os_processexit

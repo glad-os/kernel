@@ -53,7 +53,7 @@
                                  * "state" is defined as USR mode's r0-r12, sp, lr, cpsr, and pc registers.
                                  *
                                  * Parameters:
-                                 * scratch       = address of 4 bytes (word-aligned) in memory (scratch space)
+                                 * scratch       = address of 8 bytes (8-byte aligned) in memory (scratch space)
                                  * cpu_state_ptr = pointer to a cpu_state struct in memory, where state is to be stored
                                  *
                                  */

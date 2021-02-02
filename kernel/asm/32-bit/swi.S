@@ -36,12 +36,14 @@
 swi_handler:
                                 _PUSH_CPU_STATE swi_sp_backup, current_process_state                // PUSH cpu state
 
-                                CPSIE           i
+                                CPSIE           i                                                   // re-enable interrupts as OS_ReadC blocks otherwise
 
 swi_dispatch_to_handler:
                                 ADR             r4      , swi_function_pointers
-                                LDR             r5      , [lr, #-4]                                 // get SWI instruction and mask to determine SWI number
+
+                                LDR             r5      , [lr, #-4]                                 // get SVC instruction and mask to determine SVC number
                                 BIC             r5      , r5, #0xff << 24
+
                                 ADR             lr      , swi_handler_return
                                 LDR             pc      , [r4, r5, LSL #2]
 
@@ -55,9 +57,10 @@ swi_handler_return:
                                 MOVS            pc      , lr
 
 
-swi_return_value:               .word           0
-swi_sp_backup:                  .word           0
-current_process_state:          .word           0
+                                .balign         8
+swi_return_value:               .dword          0
+swi_sp_backup:                  .dword          0
+current_process_state:          .dword          0
 
 
 swi_function_pointers:

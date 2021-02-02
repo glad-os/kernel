@@ -27,14 +27,14 @@
 
 
 
-    // can record up to a maximum of 32 registers (AArch64 = x0-x30, SP_EL0, ELR_EL1)
+    // can record up to a maximum of 32 registers
     typedef struct cpu_state {
         uintptr_t r[ 32 ];
     } cpu_state;
 
     typedef struct process {
         int         free;       /* whether or not this process is currently free to be used */
-        cpu_state   state;      /* the CPU register state */
+        cpu_state   state __attribute__( ( aligned(16) ) );      /* the CPU register state */
 	int         parent;	/* the id of the parent process */
     } process;
 

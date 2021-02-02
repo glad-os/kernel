@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-.global                         _kernel_process_push_cpu_state
+
 .global                         _kernel_process_pop_cpu_state
 
 

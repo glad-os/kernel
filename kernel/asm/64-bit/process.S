@@ -15,144 +15,23 @@
  */
 
 
-
-.global                     				_kernel_process_push_cpu_state
 .global							_kernel_process_pop_cpu_state
-.global							_kernel_process_start
 
 
-
-							//
-							// _kernel_process_push_cpu_state
-							//
-							// ?
-							//
-							// On entry:
-							// x0 = pointer to kernel memory where registers are to be preserved
-							//
-							// On exit:
-							// ?
-							//
-_kernel_process_push_cpu_state:
-
-							// take key registers for now (just a subset)
-							// these will be pushed into the cpu_state for the process so it can become possible to return to it via OS_ProcessExit
-							LDR 		x1		, =swi_entrypoint_registers			// PUSH r11,r12,SP,LR
-							
-							ldr x2, [x1,#0*8]
-							str x2, [x0,#0*8]
-
-							ldr x2, [x1,#1*8]
-							str x2, [x0,#1*8]
-
-							ldr x2, [x1,#2*8]
-							str x2, [x0,#2*8]
-
-							ldr x2, [x1,#3*8]
-							str x2, [x0,#3*8]
-
-							ldr x2, [x1,#4*8]
-							str x2, [x0,#4*8]
-
-							RET
+#include                        "macros.S"
 
 
-
-							//
-							// _kernel_process_pop_cpu_state
-							//
-							// ?
-							//
-							// On entry:
-							// r0 = pointer to kernel memory where registers were preserved
-							//
-							// On exit:
-							// ?
-							//
+                                //
+                                // _kernel_process_pop_cpu_state
+                                //
+                                // -
+                                //
+                                // On entry:
+                                // r0 = pointer to current_process_state
+                                //
+                                // On exit:
+                                // -
+                                //
 _kernel_process_pop_cpu_state:
-							//MRS         		x1          		, cpsr                                  		// switch to SYS mode (gain access to USR mode register bank)
-                            				//BIC         		x1          		, x1        	, #0b00011111
-                            				//ORR         		x1          		, x1        	, #0b00011111
-                            				//MSR         		cpsr        		, x1
-
-							//LDR			x11			, [x0, #0x0]
-							//LDR			x12			, [x0, #0x4]
-							//LDR			sp			, [x0, #0x8]
-							//LDR			x3			, [x0, #0xc]
-
-                            				//MRS         		x1          		, cpsr                                  		// switch to SVC mode
-                            				//BIC         		x1          		, x1        	, #0b00011111
-                            				//ORR         		x1          		, x1        	, #0b00010011
-							//MSR			cpsr			, x1
-
-							// ERET will return from the SWI Exception and should now safely return to userland
-							// need to consider that we jump out of the kernel without 'undoing' unwanted SVC stack work at this point
-							//LDR 			x0			, =saved_svc_sp_entrypoint
-							//LDR 			sp			, [x0]
-							//MOV			lr			, x3
-						
-							ldr x29, [x0, #0*8]
-
-							ldr x30, [x0, #1*8]
-
-							ldr x1, [x0, #2*8]
-							msr SP_EL0, x1
-
-							ldr x1, [x0, #3*8]
-							msr ELR_EL1, x1
-
-							ldr x1, [x0, #4*8]
-							msr SPSR_EL1, x1
-
-							// counteract the fact we are leaving early
-							ldr x1, =saved_svc_sp_entrypoint
-							ldr x2, [x1]
-							mov sp, x2
-							//add sp,sp,#(256+16)+8
-
-                            				ERET
-
-
-
-							//
-							// _kernel_process_start
-							//
-							// ?
-							//
-							// On entry:
-							// ?
-							//
-							// On exit:
-							// ?
-							//
-_kernel_process_start:
-
-							// DDI0487A, C5-300 (0 = AArch64, 0000 = EL0t)
-							MOV			x0			, #0b00000	// C5-295
-							MSR			SPSR_EL1		, x0
-
-							// prepare stack pointer and link register
-							MOV			x0			, #8*1024*1024				
-							SUB			x0			, x0		, #16
-							MSR			SP_EL0			, x0
-							MOV			x0			, #4*1024*1024
-							MSR			ELR_EL1			, x0
-
-							// bailing on the sync_handler - adjust sp to counteract all stack work done during the handling process
-							// (there needs to be a much nicer way of dealing with this - hard-coded amounts are crazy)
-							// can't just load saved_svc_sp_entrypoint simply because initial firing up of CLI isn't done via SWI (so saved_svc_sp_entrypoint is invalid!)
-							//
-							// the 256 bytes is the space taken on the stack by sync_handler when preserving all the registers
-							// the 8 bytes is the space taken in the handler when the LR is temporarily stored
-							// the 128 bytes appears to be the stack space taken by the various chains of functions called that are obviously never returned from
-							ldr x0,=saved_svc_sp_entrypoint
-							ldr x0, [x0]
-							cmp x0,#0
-							beq must_be_cli_starting_up_internally
-							mov sp, x0
-must_be_cli_starting_up_internally:
-							// return from Exception
-							ERET
-
-
-
+                                _POP_CPU_STATE
+                                ERET

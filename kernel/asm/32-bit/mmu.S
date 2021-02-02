@@ -20,7 +20,9 @@
 
 .global                         _kernel_mmu_configure_ttbcr
 .global                         _kernel_mmu_configure_ttbr0
+
 .global                         _kernel_mmu_configure_dacr
+
 .global                         _kernel_mmu_configure_enable
 .global                         _kernel_mmu_configure_disable
 .global                         _kernel_mmu_clear_tlb_and_btc
