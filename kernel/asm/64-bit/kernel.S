@@ -156,8 +156,7 @@ el0_svc:
                                 BL              swi_handler
                                 STR             x0      , [sp, #16*0]                               // stack the return value at this point
 
-                                ADR             x0      , current_process_state                     // POP cpu state
-                                LDR             x0      , [x0]
+                                LDR             x0      , current_process_state                     // POP cpu state
                                 _POP_CPU_STATE
                                 
                                 LDR             x0      , [sp, #16*0]                               // grab the value to return
