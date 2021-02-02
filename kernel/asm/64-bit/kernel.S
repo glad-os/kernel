@@ -15,28 +15,31 @@
  */
 
 
-
 .global 						_kernel_entry, _kernel_peek_value
-.global 	_kernel_debug_sp
-.global swi_entrypoint_registers
-.global saved_svc_sp_entrypoint
+.global                         _kernel_debug_sp
+.global                         swi_entrypoint_registers
+.global                         saved_svc_sp_entrypoint
 
-							//
-							// _kernel_entry
-							//
-							// First code executed by ARM core after reset.
-							// On startup, cores 1-3 are supposedly "parked"; AArch64 is in force, EL3 is in force.
-							//
-							// On entry:
-							// -
-							//
-							// On exit:
-							// -
-							//
+
+#include                        "macros.S"
+
+
+                                //
+                                // _kernel_entry
+                                //
+                                // First code executed by ARM core after reset.
+                                // On startup, cores 1-3 are supposedly "parked"; AArch64 is in force, EL3 is in force.
+                                //
+                                // On entry:
+                                // -
+                                //
+                                // On exit:
+                                // -
+                                //
 _kernel_entry:
 
 park_cores_1_to_3:
-							MRS			x0			, MPIDR_EL1						// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0500j/BABHBJCI.html
+                                MRS			x0			, MPIDR_EL1						// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0500j/BABHBJCI.html
 					        	MOV     		x1			, #0xff
 					        	ANDS    		x0			, x0		, x1
 					        	BEQ     		first_core_instruction
@@ -45,215 +48,130 @@ parked_loop:
        							B			parked_loop
 
 first_core_instruction:
-							//
-							// if required, the MMU code will need to write to the CPUECTLR (CPU Extended Control Register) register (in order to enable 
-							// the SMPEN bit); write access to this register must first be enabled explicitly from the higher EL. Here, both EL2 and EL1 
-							// must be explicitly allowed write access to ensure this is possible.
-							//
-							// ACTLR_EL3 (Cortex-A53) characteristics: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.100403_0200_00_en/lau1443434859896.html
-							// ACTLR_EL2 (Cortex-A53) characteristics: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.100403_0200_00_en/lau1443434859896.html
-							//
+                                //
+                                // if required, the MMU code will need to write to the CPUECTLR (CPU Extended Control Register) register (in order to enable 
+                                // the SMPEN bit); write access to this register must first be enabled explicitly from the higher EL. Here, both EL2 and EL1 
+                                // must be explicitly allowed write access to ensure this is possible.
+                                //
+                                // ACTLR_EL3 (Cortex-A53) characteristics: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.100403_0200_00_en/lau1443434859896.html
+                                // ACTLR_EL2 (Cortex-A53) characteristics: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.100403_0200_00_en/lau1443434859896.html
+                                //
 enable_cpuectlr_write_access:
-							MRS			x0			, ACTLR_EL3
-							ORR			x0			, x0		, #(1<<1)				// CPUECTLR_EL2 write accessible from EL2
-							MSR			ACTLR_EL3		, x0
-							MRS			x0			, ACTLR_EL2
-							ORR			x0			, x0		, #(1<<1)				// CPUECTLR_EL1 write accessible from EL1
-							MSR			ACTLR_EL2		, x0
+                                MRS			x0			, ACTLR_EL3
+                                ORR			x0			, x0		, #(1<<1)				// CPUECTLR_EL2 write accessible from EL2
+                                MSR			ACTLR_EL3		, x0
+                                MRS			x0			, ACTLR_EL2
+                                ORR			x0			, x0		, #(1<<1)				// CPUECTLR_EL1 write accessible from EL1
+                                MSR			ACTLR_EL2		, x0
 
 drop_from_el3_to_el2:
-							MSR			SCTLR_EL2		, xzr
-							MOV			x0			, #0b01001 						// DDI0487A, C5-300 (0 = AArch64, 1001 = EL2)
-							MSR			SPSR_EL3		, x0
-							ADR			x0			, el2_entry
-							MSR			ELR_EL3			, x0
-							ERET
+                                MSR			SCTLR_EL2		, xzr
+                                MOV			x0			, #0b01001 						// DDI0487A, C5-300 (0 = AArch64, 1001 = EL2)
+                                MSR			SPSR_EL3		, x0
+                                ADR			x0			, el2_entry
+                                MSR			ELR_EL3			, x0
+                                ERET
 
 el2_entry:
-							//
-							// the following changes to HCR_EL2 ensure that various operations are *not* elevated up to EL2 (Hypervisor) but instead remain
-							// routed to EL1 (Supervisor). Of particular interest here is the bit which prevent trapping of TLB maintenance instructions, 
-							// and also the bit which mean EL1&0 Stage 2 address translations are DISABLED (which is MMU-related).
-							//
+                                //
+                                // the following changes to HCR_EL2 ensure that various operations are *not* elevated up to EL2 (Hypervisor) but instead remain
+                                // routed to EL1 (Supervisor). Of particular interest here is the bit which prevent trapping of TLB maintenance instructions, 
+                                // and also the bit which mean EL1&0 Stage 2 address translations are DISABLED (which is MMU-related).
+                                //
 dont_trap_vm_reg_writes_to_el2:
-							MRS			x0			, HCR_EL2
-							BIC			x0			, x0		, #(1<<30)				// clear bit 26 (TRVM) which means DON'T trap non-secure EL1 reads to the VM registers to EL2
-							BIC			x0			, x0		, #(1<<27)				// clear bit 27 (TGE)  which means DON'T trap general exceptions to EL2
-							BIC			x0			, x0		, #(1<<26)				// clear bit 26 (TVM)  which means DON'T trap non-secure EL1 writes to the VM registers to EL2
-							BIC			x0			, x0		, #(1<<25)				// clear bit 25 (TTLB) which means DON'T trap TLB maintenance instructions to EL2
-							BIC			x0			, x0		, #(1<<21) 				// clear bit 21 (TACR) which means DON'T trap access to the Auxiliary Control Registers to EL2
-							BIC			x0			, x0		, #(1<< 0)				// clear bit  0 (VM)   which means EL1&0 stage 2 address translations are DISABLED (only stage 1 for EL1&0 please)
-							MSR			HCR_EL2			, x0
+                                MRS			x0			, HCR_EL2
+                                BIC			x0			, x0		, #(1<<30)				// clear bit 26 (TRVM) which means DON'T trap non-secure EL1 reads to the VM registers to EL2
+                                BIC			x0			, x0		, #(1<<27)				// clear bit 27 (TGE)  which means DON'T trap general exceptions to EL2
+                                BIC			x0			, x0		, #(1<<26)				// clear bit 26 (TVM)  which means DON'T trap non-secure EL1 writes to the VM registers to EL2
+                                BIC			x0			, x0		, #(1<<25)				// clear bit 25 (TTLB) which means DON'T trap TLB maintenance instructions to EL2
+                                BIC			x0			, x0		, #(1<<21) 				// clear bit 21 (TACR) which means DON'T trap access to the Auxiliary Control Registers to EL2
+                                BIC			x0			, x0		, #(1<< 0)				// clear bit  0 (VM)   which means EL1&0 stage 2 address translations are DISABLED (only stage 1 for EL1&0 please)
+                                MSR			HCR_EL2			, x0
 
-							//
-							// HCR_EL2 determines whether various (non-secure) operations are trapped to EL2.
-							// Currently this is of no interest - only EL1 is relevant, so ensure relevant operations are not trapped.
-							//
+                                //
+                                // HCR_EL2 determines whether various (non-secure) operations are trapped to EL2.
+                                // Currently this is of no interest - only EL1 is relevant, so ensure relevant operations are not trapped.
+                                //
 prevent_exception_routing_to_el2:
-							MRS			x0			, HCR_EL2
-							BIC			x0			, x0		, #(1<<5)				// AMO (Async external abort, and SError interrupt routing)
-							BIC			x0			, x0		, #(1<<4)				// physical IRQ routing
-							BIC			x0			, x0		, #(1<<3)				// physical FIQ routing
-							MSR			HCR_EL2			, x0
+                                MRS			x0			, HCR_EL2
+                                BIC			x0			, x0		, #(1<<5)				// AMO (Async external abort, and SError interrupt routing)
+                                BIC			x0			, x0		, #(1<<4)				// physical IRQ routing
+                                BIC			x0			, x0		, #(1<<3)				// physical FIQ routing
+                                MSR			HCR_EL2			, x0
 
 set_el1_as_aarch64:
-							MRS			x0			, HCR_EL2						// HCR = "Hypervisor Control Register"
-							ORR			x0			, x0, #(1<<31)						// EL1 is AArch64
-							MSR			HCR_EL2			, x0
+                                MRS			x0			, HCR_EL2						// HCR = "Hypervisor Control Register"
+                                ORR			x0			, x0, #(1<<31)						// EL1 is AArch64
+                                MSR			HCR_EL2			, x0
 					
 drop_from_el2_to_el1:
-							MSR			SCTLR_EL1		, xzr
-							MOV			x0			, #0b00101 						// DDI0487A, C5-300 (0 = AArch64, 0101 = EL1)
-							MSR			SPSR_EL2		, x0
-							ADR			x0			, el1_entry
-							MSR			ELR_EL2			, x0
-							ERET
+                                MSR			SCTLR_EL1		, xzr
+                                MOV			x0			, #0b00101 						// DDI0487A, C5-300 (0 = AArch64, 0101 = EL1)
+                                MSR			SPSR_EL2		, x0
+                                ADR			x0			, el1_entry
+                                MSR			ELR_EL2			, x0
+                                ERET
 
 el1_entry:
-							MSR SPSel,#1 // ACU - in EL1, please us SP_EL1 and don't start sharing SP_EL0
-							BL			_kernel_start_enable_fpu
-							BL			_kernel_start_clear_bss
-							BL			_kernel_start_setup_stacks
-							BL 			_kernel_start_install_vector_table
-							BL			_kernel_init
+                                MSR SPSel,#1 // ACU - in EL1, please us SP_EL1 and don't start sharing SP_EL0
+                                BL			_kernel_start_enable_fpu
+                                BL			_kernel_start_clear_bss
+                                BL			_kernel_start_setup_stacks
+                                BL 			_kernel_start_install_vector_table
+                                BL			_kernel_init
 
 switch_to_el0:
-							//MOV			x0			, #0b00000						// DDI0487A, C5-300 (0 = AArch64, 0000 = EL0t)
-							//MSR			SPSR_EL1		, x0
-							//ADR			x0			, el0_entry
-							//MSR			ELR_EL1			, x0
-							//ERET
+                                //MOV			x0			, #0b00000						// DDI0487A, C5-300 (0 = AArch64, 0000 = EL0t)
+                                //MSR			SPSR_EL1		, x0
+                                //ADR			x0			, el0_entry
+                                //MSR			ELR_EL1			, x0
+                                //ERET
 //el0_entry:
-							BL			_kernel_start_cli
-infinite_loop:						B			infinite_loop
+                                BL              _kernel_start_cli
+infinite_loop:					B               infinite_loop
 
 
-							// ------------------------------------------------------------------------------------------------------------------------------------------------
-							//
-							//
-							// sync handler - exceptions (SVC, etc.) are synchronous exceptions!
-							//
-							// if EL2 or EL3, set them up and return, simple as that for now
-							//
-							// CurrentEL : ARM Architecture Reference Manual ARMv8 (DDI0487A) [C5-265]
-							//
-							//
-							// ------------------------------------------------------------------------------------------------------------------------------------------------
+                                // ------------------------------------------------------------------------------------------------------------------------------------------------
+                                //
+                                //
+                                // sync handler - exceptions (SVC, etc.) are synchronous exceptions!
+                                //
+                                // if EL2 or EL3, set them up and return, simple as that for now
+                                //
+                                // CurrentEL : ARM Architecture Reference Manual ARMv8 (DDI0487A) [C5-265]
+                                //
+                                //
+                                // ------------------------------------------------------------------------------------------------------------------------------------------------
 
-sync_handler:		
-							
-							ldr x2, =saved_svc_sp_entrypoint
-							mov x3, sp
-							str x3, [x2] // if we need to bail from sync_handler, this is a handy reference of what SP was on entry!
+sync_handler:
+                                _PUSH_CPU_STATE swi_sp_backup, current_process_state                // PUSH cpu state
 
-							// next, make a record of x29, x30, SP(EL0), and ELR_EL1 (LR for EL0) as Process-related SWIs will want to keep a record of these
-							ldr x2, = swi_entrypoint_registers
-							STR		x29			, [x2,#0*8]
-							STR		x30			, [x2,#1*8]
-							mrs 		x3, SP_EL0
-							STR		x3			, [x2,#2*8]
-							mrs 		x3, ELR_EL1
-							STR		x3			, [x2,#3*8]
-							mrs 		x3, SPSR_EL1
-							STR		x3			, [x2,#4*8]
-
-							sub	sp, sp, #256+16
-							stp	x0, x1, [sp, #16 * 0]
-							stp	x2, x3, [sp, #16 * 1]
-							stp	x4, x5, [sp, #16 * 2]
-							stp	x6, x7, [sp, #16 * 3]
-							stp	x8, x9, [sp, #16 * 4]
-							stp	x10, x11, [sp, #16 * 5]
-							stp	x12, x13, [sp, #16 * 6]
-							stp	x14, x15, [sp, #16 * 7]
-							stp	x16, x17, [sp, #16 * 8]
-							stp	x18, x19, [sp, #16 * 9]
-							stp	x20, x21, [sp, #16 * 10]
-							stp	x22, x23, [sp, #16 * 11]
-							stp	x24, x25, [sp, #16 * 12]
-							stp	x26, x27, [sp, #16 * 13]
-							stp	x28, x29, [sp, #16 * 14]
-							str	x30, [sp, #16 * 15] 
-							mrs x0,ELR_EL1					// very important we stack these as IRQ handler, if triggered during SVC, overwrites them
-							mrs x1,SPSR_EL1
-							stp	x0, x1, [sp, #16 * 16]
-
-
-
-							mrs    x0, esr_el1
-							lsr    x0, x0, #26      // exception class (top 6-bits identify the class of sync exception that occurred - quite a few to choose from)
-							cmp    x0, #0b010101           // SVC in 64-bit state
-							b.eq    el0_svc
-
-							// print out the ELR so we can check where we theoretically came from
-							mov x0, #91
-							bl _kernel_video_print_char
-							mrs x0, ESR_EL1
-							BL _kernel_video_print_hex
-							mov x0, #93
-							bl _kernel_video_print_char
-
-							mov x0, #91
-							bl _kernel_video_print_char
-							mrs x0, ELR_EL1
-							BL _kernel_video_print_hex
-							mov x0, #93
-							bl _kernel_video_print_char
-
-stick_around:						B stick_around
+                                MRS             x24      , esr_el1
+                                LSR             x24      , x24, #26                                 // exception class (top 6-bits identify the class of sync exception that occurred - quite a few to choose from)
+                                CMP             x24      , #0b010101                                // SVC in 64-bit state
+                                B.EQ            el0_svc
+stick_around:                   B               stick_around
 
 el0_svc:
-							// on entry to via an SVC call, x0/x1 contain the pointers to the in/out data structures for the swi
-							ldp x0, x1, [sp,#16*0]
-							BL swi_handler
+                                BL              swi_handler
+                                STR             x0      , [sp, #16*0]                               // stack the return value at this point
 
-
-
-exit_sync_handler:
-							ldp	x0, x1, [sp, #16 * 0]
-							ldp	x2, x3, [sp, #16 * 1]
-							ldp	x4, x5, [sp, #16 * 2]
-							ldp	x6, x7, [sp, #16 * 3]
-							ldp	x8, x9, [sp, #16 * 4]
-							ldp	x10, x11, [sp, #16 * 5]
-							ldp	x12, x13, [sp, #16 * 6]
-							ldp	x14, x15, [sp, #16 * 7]
-							ldp	x16, x17, [sp, #16 * 8]
-							ldp	x18, x19, [sp, #16 * 9]
-							ldp	x20, x21, [sp, #16 * 10]
-							ldp	x22, x23, [sp, #16 * 11]
-							ldp	x24, x25, [sp, #16 * 12]
-							ldp	x26, x27, [sp, #16 * 13]
-							ldp	x28, x29, [sp, #16 * 14]
-							ldr	x30, [sp, #16 * 15] 
-
-							ldp	x0, x1, [sp, #16 * 16]	// holy shit this was it - I need to stack SPSR_EL1 and ELR_EL1 because interrupt handler corrupts it when it occurs!!
-							msr	ELR_EL1, x0
-							msr	SPSR_EL1, x1
-				
-							ldp	x0, x1, [sp, #16 * 0]
-
-							add	sp, sp, #256+16
-							
-							ERET
-
-
-
-
-						.balign 8
-saved_svc_sp_entrypoint:			.dword		0
-
-						.balign 8
-swi_entrypoint_registers:			.dword		0, 0, 0, 0, 0
-						.balign 8
+                                ADR             x0      , current_process_state                     // POP cpu state
+                                LDR             x0      , [x0]
+                                _POP_CPU_STATE
+                                
+                                LDR             x0      , [sp, #16*0]                               // grab the value to return
+                                ERET
 
 
 _kernel_debug_sp:
-str lr,[sp,#-8]!
-mov x0,sp
-bl _kernel_video_print_hex
-ldr lr,[sp],#8
-ret
+                                STR             lr      , [sp, #-8]!
+                                MOV             x0      , sp
+                                BL              _kernel_video_print_hex
+                                LDR             lr      , [sp], #8
+                                RET
+
+
 							// ------------------------------------------------------------------------------------------------------------------------------------------------
 							//
 							//

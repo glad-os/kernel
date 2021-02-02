@@ -114,8 +114,8 @@ int _kernel_process_begin( char *filename ) {
     _kernel_mmu_map_process_in( slot, 1,1 );
     _kernel_fat32_load_file( filename_copy, (unsigned char *) ( 4 * MBYTE ) );
     _kernel_mmu_invalidate_i_cache();
-	_kernel_mmu_clean_l1_d_cache();
-	_kernel_mmu_clean_l2_d_cache();
+	//_kernel_mmu_clean_l1_d_cache();
+	//_kernel_mmu_clean_l2_d_cache();
     _kernel_process_pop_cpu_state( current_process_state );
 
     return slot;
@@ -136,15 +136,18 @@ int _kernel_process_init_cpu_state( cpu_state *state ) {
 
     int i;
 
-    for ( i = 0; i <= 12; i++ ) {
+    // @todo 32-bit <= 12; 64-bit <= 15
+    for ( i = 0; i <= 15; i++ ) {
         state->r[i] = 0;
     }
+    // let's put something very specific in x1...
+    state->r[1] = 0xDEADFACE;
 
     // sp, lr, pc and cpsr require specific values at startup
-    state->r[13] = 8 * MBYTE;       // sp
-    state->r[14] = 0;               // lr
-    state->r[15] = 16;              // cpsr
-    state->r[16] = 4 * MBYTE;       // pc
+    state->r[16] = 8 * MBYTE;       // sp
+    state->r[17] = 0;               // lr
+    state->r[18] = 0;              // cpsr @todo this needs to be different for 64-bit (PSTATE value!) (CPSR = 16, PSTATE = ?)
+    state->r[19] = 4 * MBYTE;       // pc
 
 }
 

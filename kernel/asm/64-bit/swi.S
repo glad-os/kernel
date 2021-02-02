@@ -34,7 +34,8 @@
                                 // All registers reinstated *except* x0 which carries a status (success/failure) value appropriate to the individual SWI
                                 //
 swi_handler:
-                                _PUSH_CPU_STATE swi_sp_backup, current_process_state                // PUSH cpu state
+                                adr x29, mylr
+                                str   x30, [x29]
 
                                 MSR             DAIFClr , #0x2                                      // re-enable interrupts as OS_ReadC blocks otherwise
 
@@ -49,17 +50,12 @@ swi_dispatch_to_handler:
                                 BR              x4
 
 swi_handler_return:
-                                ADR             x1      , swi_return_value
-                                STR             x0      , [x1]                                      // preserve x0 (this is the return value)
-
-                                LDR             x0      , current_process_state                     // POP cpu state
-                                _POP_CPU_STATE
-
-                                LDR             x0      , swi_return_value                          // reinstate the return value, and return...
-                                ERET
+                                ldr   x30, mylr
+                                RET x30
 
 
                                 .balign         8
+mylr:                           .dword          0
 swi_return_value:               .dword          0
 swi_sp_backup:                  .dword          0
 current_process_state:          .dword          0

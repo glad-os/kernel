@@ -50,7 +50,7 @@
                                  */
 .macro                          _PUSH_CPU_STATE scratch, cpu_state_ptr
 
-                                // let's just tempoarily wreck X24/X25 for a mo, instead...
+                                // let's just temporarily wreck X24/X25 for a mo, instead...
                                 MOV             x24     , sp                                        // preserve SP
 
                                 ADR             x25     , \cpu_state_ptr                            // use SP to point at the cpu_state struct
@@ -69,8 +69,8 @@
                                 MSR             SPSel   , #0                                        // update PSTATE to use SP_EL0
                                 MOV             x25     , sp
                                 MOV             x26     , lr
-                                STP             x25     , x26, [sp], #16                            // PUSH: sp, lr
                                 MSR             SPSel   , #1                                        // update PSTATE to use SP_ELn
+                                STP             x25     , x26, [sp], #16                            // PUSH: sp, lr
 
                                 MRS             x25     , SPSR_EL1
                                 MRS             x26     , ELR_EL1
