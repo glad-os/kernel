@@ -58,9 +58,9 @@ swi_handler_return:
 
 
                                 .balign         8
-swi_return_value:               .dword          0
-swi_sp_backup:                  .dword          0
-current_process_state:          .dword          0
+swi_return_value:               .word           0
+swi_sp_backup:                  .word           0
+current_process_state:          .word           0
 
 
 swi_function_pointers:

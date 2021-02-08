@@ -43,7 +43,6 @@
     void 	_kernel_process_init	( void );
     int 	_kernel_process_begin	( char *filename );
     void 	_kernel_process_exit	( void );
-    int     _kernel_process_init_cpu_state( cpu_state *state );
 
     extern cpu_state *current_process_state;
 

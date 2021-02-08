@@ -86,7 +86,7 @@ void _kernel_mmu_init( void )
 		for ( j = 0; j < 8192; j++ ) {
 			// level 3 entries are page descriptors, pointing to the relevant 64Kb page (944Mb+ = kernel/Pi device)
 			flags = MMU_PAGE_DESCRIPTOR_ACCESS_FLAG | MMU_PAGE_DESCRIPTOR_NON_SECURE | MMU_TRANS_ENTRY_LEVEL_3_PAGE;
-			if ( page >= ( (944 * MBYTE / 64) ) ) {
+			if ( page >= ( (946 * MBYTE / 64) ) ) {
 				flags |= MMU_PAGE_DESCRIPTOR_OUTER_SHAREABLE | 
 					 MMU_PAGE_DESCRIPTOR_ACCESS_EL1_RW_EL0_NONE |
 					 MMU_PAGE_DESCRIPTOR_MAIR_3;
@@ -199,12 +199,21 @@ void _kernel_mmu_map_va_section( unsigned int va_section, unsigned int pa_sectio
 	pa_index = ( pa_section * MBYTE ) / ( 64 * KBYTE );
 
 	for ( i = 0; i < 16; i++ ) {
+
 		// _kernel_video_print_string( "Mapping " ); _kernel_video_print_hex( va_index ); _kernel_video_print_string( " to " ); _kernel_video_print_hex( pa_index ); _kernel_video_print_string( "\n" );
+
 		// level 3 entries are page descriptors, pointing to the relevant 64Kb page
 		flags = MMU_PAGE_DESCRIPTOR_ACCESS_FLAG | MMU_PAGE_DESCRIPTOR_NON_SECURE | MMU_TRANS_ENTRY_LEVEL_3_PAGE;
+
+        /*
 		flags |= MMU_PAGE_DESCRIPTOR_OUTER_SHAREABLE | 
 			 MMU_PAGE_DESCRIPTOR_ACCESS_EL1_RW_EL0_RW |
 			 MMU_PAGE_DESCRIPTOR_MAIR_3;
+             */
+        flags |= MMU_PAGE_DESCRIPTOR_OUTER_SHAREABLE;
+        flags |= MMU_PAGE_DESCRIPTOR_ACCESS_EL1_RW_EL0_RW;
+        flags |= MMU_PAGE_DESCRIPTOR_MAIR_0;
+
 		level_3_tables[ va_index ] = ( pa_index << 16 ) | flags ;
 		va_index++;
 		pa_index++;

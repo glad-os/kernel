@@ -22,6 +22,7 @@
 #include "start.h"
 #include "stdlib.h"
 #include "video.h"
+#include "cpu-state.h"
 
 
 // IMP OS manages up to 16 processes for now
@@ -119,35 +120,6 @@ int _kernel_process_begin( char *filename ) {
     _kernel_process_pop_cpu_state( current_process_state );
 
     return slot;
-
-}
-
-
-/**
- *
- * _kernel_process_init_cpu_state
- *
- * Initialises the CPU state of a given process (ready to run for the first time)
- *
- * ORDER := r0-r12,sp,lr,cpsr,pc
- *
- */
-int _kernel_process_init_cpu_state( cpu_state *state ) {
-
-    int i;
-
-    // @todo 32-bit <= 12; 64-bit <= 15
-    for ( i = 0; i <= 15; i++ ) {
-        state->r[i] = 0;
-    }
-    // let's put something very specific in x1...
-    state->r[1] = 0xDEADFACE;
-
-    // sp, lr, pc and cpsr require specific values at startup
-    state->r[16] = 8 * MBYTE;       // sp
-    state->r[17] = 0;               // lr
-    state->r[18] = 0;              // cpsr @todo this needs to be different for 64-bit (PSTATE value!) (CPSR = 16, PSTATE = ?)
-    state->r[19] = 4 * MBYTE;       // pc
 
 }
 
