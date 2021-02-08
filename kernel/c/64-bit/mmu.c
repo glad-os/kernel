@@ -86,14 +86,14 @@ void _kernel_mmu_init( void )
 		for ( j = 0; j < 8192; j++ ) {
 			// level 3 entries are page descriptors, pointing to the relevant 64Kb page (944Mb+ = kernel/Pi device)
 			flags = MMU_PAGE_DESCRIPTOR_ACCESS_FLAG | MMU_PAGE_DESCRIPTOR_NON_SECURE | MMU_TRANS_ENTRY_LEVEL_3_PAGE;
-			if ( page >= ( (946 * MBYTE / 64) ) ) {
+			if ( ( page >= (946 * MBYTE / 64) ) || ( page <= (4 * MBYTE / 64) ) ) {
 				flags |= MMU_PAGE_DESCRIPTOR_OUTER_SHAREABLE | 
 					 MMU_PAGE_DESCRIPTOR_ACCESS_EL1_RW_EL0_NONE |
 					 MMU_PAGE_DESCRIPTOR_MAIR_3;
 			} else {
-				flags |= MMU_PAGE_DESCRIPTOR_INNER_SHAREABLE |
+				flags |= MMU_PAGE_DESCRIPTOR_OUTER_SHAREABLE |
 					 MMU_PAGE_DESCRIPTOR_ACCESS_EL1_RW_EL0_NONE	| 
-					 MMU_PAGE_DESCRIPTOR_MAIR_3;
+					 MMU_PAGE_DESCRIPTOR_MAIR_0;
 			}
 			level_3_tables[ i * 8192 + j ] = ( page++ << 16 ) | flags ;
 		}

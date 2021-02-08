@@ -116,7 +116,7 @@ int _kernel_process_begin( char *filename ) {
     _kernel_fat32_load_file( filename_copy, (unsigned char *) ( 4 * MBYTE ) );
     _kernel_mmu_invalidate_i_cache();
 	_kernel_mmu_clean_l1_d_cache();
-	//_kernel_mmu_clean_l2_d_cache();
+	_kernel_mmu_clean_l2_d_cache();
     _kernel_process_pop_cpu_state( current_process_state );
 
     return slot;
@@ -150,6 +150,7 @@ void _kernel_process_exit( void ) {
     current_process_state = &proc[ parent ].state;
     _kernel_mmu_invalidate_i_cache();
 	_kernel_mmu_clean_l1_d_cache();
+	_kernel_mmu_clean_l2_d_cache();
 	_kernel_process_pop_cpu_state( current_process_state );
 
 }
