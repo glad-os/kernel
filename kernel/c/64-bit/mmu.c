@@ -104,20 +104,20 @@ void _kernel_mmu_init( void )
 
 	// configure the MMU via its TCR
 	tcr = _kernel_mmu_tcr_read();
-	tcr = _kernel_set_flags( tcr, TCR_EL1_T0SZ,	32						);
-	tcr = _kernel_set_flags( tcr, TCR_EL1_IPS,	MMU_TCR_IPS_40BITS				);
-	tcr = _kernel_set_flags( tcr, TCR_EL1_TG0,	MMU_TCR_TG0_64KB				);
-	tcr = _kernel_set_flags( tcr, TCR_EL1_SH0,	MMU_TCR_SH0_NON_SHAREABLE			);
-	tcr = _kernel_set_flags( tcr, TCR_EL1_EPD0,	MMU_TCR_EPD0_ENABLE				);
-	tcr = _kernel_set_flags( tcr, TCR_EL1_ORGN0,	MMU_TCR_ORGN0_WRITE_THROUGH			);
-	tcr = _kernel_set_flags( tcr, TCR_EL1_IRGN0,	MMU_TCR_IRGN0_WRITE_BACK_NO_WRITE_ALLOCATE	);
+	tcr = _kernel_set_flags( tcr, TCR_EL1_T0SZ,	32                                          );
+	tcr = _kernel_set_flags( tcr, TCR_EL1_IPS,      MMU_TCR_IPS_40BITS                      );
+	tcr = _kernel_set_flags( tcr, TCR_EL1_TG0,      MMU_TCR_TG0_64KB                        );
+	tcr = _kernel_set_flags( tcr, TCR_EL1_SH0,      MMU_TCR_SH0_NON_SHAREABLE               );
+	tcr = _kernel_set_flags( tcr, TCR_EL1_EPD0,     MMU_TCR_EPD0_ENABLE                     );
+	tcr = _kernel_set_flags( tcr, TCR_EL1_ORGN0,	MMU_TCR_ORGN0_NON_CACHEABLE             ); // @todo investigate/understand this stuff better
+	tcr = _kernel_set_flags( tcr, TCR_EL1_IRGN0,	MMU_TCR_IRGN0_WRITE_BACK_WRITE_ALLOCATE );
 	_kernel_mmu_tcr_write( tcr );
 	
 	// configure the access permissions for the MMU
-	flags = ( MMU_MAIR_DEVICE_NGNRNE			<< 24 ) |
-		( MMU_MAIR_NORMAL_OUTER_INNER_NOCACHE		<< 16 ) |
-		( MMU_MAIR_DEVICE_NGNRE				<<  8 ) |
-		( MMU_MAIR_NORMAL_OUTER_INNER_WRITEBACK_RW_ALLOC      );
+	flags = ( MMU_MAIR_DEVICE_NGNRNE                << 24       ) |
+            ( MMU_MAIR_NORMAL_OUTER_INNER_NOCACHE   << 16       ) |
+            ( MMU_MAIR_DEVICE_NGNRE                 <<  8       ) |
+            ( MMU_MAIR_NORMAL_OUTER_INNER_WRITEBACK_RW_ALLOC    );
 	_kernel_mmu_configure_mair( flags );
 
 	// enable the MMU

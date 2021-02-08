@@ -38,11 +38,10 @@
 
 _kernel_mmu_invalidate_i_cache:
                                 IC              IALLU
+                                ISB
                                 RET
 
 
-_kernel_mmu_clean_l1_d_cache:
-                                RET
 
 
 _kernel_mmu_clean_l2_d_cache:
@@ -216,6 +215,7 @@ _kernel_mmu_configure_disable:
                                 // _kernel_mmu_invalidate_tlb
                                 //
                                 // Invalidates ("flushes") the TLB (Translation Lookaside Buffer)
+                                // Runs through the VA address range from 4Mb-8Mb
                                 //
                                 // Ref: ARM DDI 0487A.f [C5-393] "A64 system instructions for TLB maintenance"
                                 // Ref: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0488d/CIHGGBGB.html
@@ -227,7 +227,14 @@ _kernel_mmu_configure_disable:
                                 // r0 = corrupted
                                 //
 _kernel_mmu_invalidate_tlb:
-                                TLBI            VMALLE1IS
+
+                                MOV             x4      , #((4*1024*1024)>>12)                      // only bits VA[55:12] are required
+_kernel_mmu_invalidate_tlb_loop:
+                                TLBI            VALE1IS , x4
+                                ADD             x4      , x4, #1                                    // (adding 1 increases by equivalent of 4Kb)
+                                CMP             x4      , #((8*1024*1024)>>12)
+                                B.LT            _kernel_mmu_invalidate_tlb_loop
+
                                 RET
 
 
@@ -249,6 +256,7 @@ _kernel_mmu_invalidate_tlb:
                                 //
 _kernel_mmu_invalidate_btc:
                                 IC              IALLU                                               // [G6.2.73] also invalidates the branch predictor
+                                ISB
                                 RET
 
 
@@ -257,6 +265,7 @@ _kernel_mmu_invalidate_btc:
                                 // x0 = virtual address
                                 //
                                 // Ref: ARM DDI 0487A.f [C5-318] "DC CIVAC, Data or unified Cache line Clean and Invalidate by VA to PoC"
+                                // "Clean and Invalidate data cache by address to Point of Coherency" (should better clean by Set/Way)
                                 //
 _kernel_mmu_clean_and_invalidate_cache_va:
 
@@ -264,3 +273,12 @@ _kernel_mmu_clean_and_invalidate_cache_va:
                                 RET
 
 
+_kernel_mmu_clean_l1_d_cache:
+                                MOV             x4      , #4*1024*1024
+                                MOV             x5      , #4*1024*1024
+_kernel_mmu_clean_l1_d_cache_lp:
+                                DC              CIVAC   , x4
+                                ADD             x4      , x4, #4
+                                SUBS            x5      , x5, #4
+                                B.NE            _kernel_mmu_clean_l1_d_cache_lp
+                                RET
