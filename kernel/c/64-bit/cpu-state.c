@@ -25,8 +25,6 @@
  *
  * Initialises the CPU state of a given process (ready to run for the first time)
  *
- * ORDER := r0-r12,sp,lr,cpsr,pc
- *
  */
 int _kernel_process_init_cpu_state( cpu_state *state ) {
 
@@ -39,7 +37,7 @@ int _kernel_process_init_cpu_state( cpu_state *state ) {
     // sp, lr, pc and cpsr require specific values at startup
     state->r[16] = 8 * MBYTE;       // sp
     state->r[17] = 0;               // lr
-    state->r[18] = 0;               // cpsr @todo this needs to be different for 64-bit (PSTATE value!) (CPSR = 16, PSTATE = ?)
+    state->r[18] = 0;               // pstate
     state->r[19] = 4 * MBYTE;       // pc
 
 }

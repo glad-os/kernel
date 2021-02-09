@@ -16,11 +16,21 @@
 
 
 #include <stdint.h>
-#include "process.h"
 
 
 #ifndef CPU_STATE_H
 #define CPU_STATE_H
+
+
+    /*
+     * reserves space for 20 x 64-bit registers:
+     *   - r0-r15
+     *   - sp, lr
+     *   - pstate, pc
+     */
+    typedef struct cpu_state {
+        uintptr_t r[ 20 ];
+    } cpu_state;
 
 
     int     _kernel_process_init_cpu_state( cpu_state *state );

@@ -16,34 +16,29 @@
 
 
 #include <stdint.h>
+#include "cpu-state.h"
 
 
 #ifndef PROCESS_H
 #define PROCESS_H
 
 
-
     #define		MAX_PROCESSES		16
 
 
-
-    // can record up to a maximum of 32 registers
-    typedef struct cpu_state {
-        uintptr_t r[ 32 ];
-    } cpu_state;
-
     typedef struct process {
-        int         free;       /* whether or not this process is currently free to be used */
-        cpu_state   state __attribute__( ( aligned(16) ) );      /* the CPU register state */
-	int         parent;	/* the id of the parent process */
+        int         free;                                                                           /* whether or not this process is currently free to be used */
+        cpu_state   state __attribute__( ( aligned(16) ) );                                         /* the CPU register state (align 16, to be 64-bit friendly) */
+        int         parent;                                                                         /* the id of the parent process */
     } process;
-
 
 
     void 	_kernel_process_init	( void );
     int 	_kernel_process_begin	( char *filename );
     void 	_kernel_process_exit	( void );
 
+
     extern cpu_state *current_process_state;
+
 
 #endif /*PROCESS_H*/
