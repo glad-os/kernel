@@ -40,6 +40,7 @@
 	void			_kernel_video_print_hex					( unsigned int h );
 	void 			_video_display_memory					( unsigned int tag );
 
+	extern void 			_fastcharplot( unsigned int );
 
 
 #endif /*KERNEL_VIDEO_H*/

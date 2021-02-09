@@ -16,6 +16,42 @@
 
 
 .global                         put_word, get_word, delay_loop, move1k, blank1k
+.global                         _fastcharplot
+
+                                /*
+                                 * _fastcharplot
+                                 *
+                                 * On entry:
+                                 * x0 = ASCII value of char to plot
+                                 *
+                                 * Plots 8x8 ASCII char on-screen at VRAM position
+                                 * currently identified by value held in cursor_vram_address
+                                 */
+
+_fastcharplot:
+                                LDR             x1      , _fontdata_ptr                             // x1 points to font data
+                                ADD             x1      , x1, x0, LSL #3
+                                LDR             x2      , _cursor_vram_address_ptr                  // x2 points to VRAM
+                                LDR             x2      , [x2]
+                                MOV             x3      , #8
+
+_fastcharplot_row:
+                                LDP             x4      , x5, [x1], #16                             // data in 64-bit format
+                                LDP             x6      , x7, [x1], #16
+                                STP             x4      , x5, [x2, #0*16]
+                                STP             x6      , x7, [x2, #1*16]
+                                ADD             x2      , x2, #640*4                                // move VRAM pointer to next row
+
+_fastcharplot_nextrow:
+                                SUBS            x3      , x3, #1
+                                BNE             _fastcharplot_row
+
+                                RET
+
+
+                                .balign     8
+_fontdata_ptr:                  .dword      fontdata_8x8
+_cursor_vram_address_ptr:       .dword      cursor_vram_address
 
 
 put_word:

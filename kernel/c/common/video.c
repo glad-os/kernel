@@ -15,7 +15,6 @@
  */
 
 
-
 #include <stdint.h>
 #include "const.h"
 #include "video.h"
@@ -26,15 +25,16 @@
 #include "define.h"
 
 
+unsigned int            mode, width, height, colour_foreground, colour_background, cursor_x, cursor_y;
+volatile uint32_t       mailbox_buffer[ 256 ] __attribute__( ( aligned(16) ) );
+uintptr_t               video_ram_address = 0, cursor_vram_address = 0;
+extern unsigned char    pi_logo_map[];
 
-unsigned int 		mode, width, height, colour_foreground, colour_background, cursor_x, cursor_y, video_ram_address;
-volatile uint32_t 	mailbox_buffer[ 256 ] __attribute__( ( aligned(16) ) );
-void 			_kernel_video_display_memory	( unsigned int tag );
-void			_kernel_video_scroll_up			( void );
-void 			_kernel_video_show_revision		( void );
-void			_kernel_video_show_buildtype		( void );
-extern unsigned char 	pi_logo_map[];
 
+void _kernel_video_display_memory	( unsigned int tag );
+void _kernel_video_scroll_up			( void );
+void _kernel_video_show_revision		( void );
+void _kernel_video_show_buildtype	( void );
 
 
 void _kernel_video_display_logo( void )
@@ -276,7 +276,7 @@ void _kernel_video_set_mode( unsigned int n )
 	_kernel_mailbox_read( 8 );
 
 	mode = n;
-	video_ram_address = mailbox_buffer[ 19 ] & 0x3fffffff;
+	video_ram_address = (uintptr_t) mailbox_buffer[ 19 ] & 0x3fffffff;
 	width = VIDEO_WIDTH; height = VIDEO_HEIGHT;
 
 	// mode change always sets foreground/background to white/black, clears the screen, and resets cursor position
@@ -376,6 +376,7 @@ void _kernel_video_set_character_position( unsigned int x, unsigned int y )
 
 	cursor_x = x;
 	cursor_y = y;
+    cursor_vram_address = video_ram_address + ((y*8)*width*4) + ((x*8)*4);
 
 }
 
@@ -425,21 +426,21 @@ void _kernel_video_print_char( char c )
 		case 0x7f :
 			if ( cursor_x == 0 )
 			{
-				cursor_x += (width/8)-1;
-				if ( cursor_y > 0 ) { cursor_y--; }
+                _kernel_video_set_character_position( (width/8)-1, cursor_y );
+				if ( cursor_y > 0 ) { _kernel_video_set_character_position( cursor_x, cursor_y-1 ); }
 			} else {
-				cursor_x--;
+                _kernel_video_set_character_position( cursor_x - 1, cursor_y );
 			}
 			c = 0x20;
 			advance = 0;
 			break;
 
 		case 0x0a :
-			cursor_y++; cursor_x = 0;
+            _kernel_video_set_character_position( 0, cursor_y + 1 );
 			if ( cursor_y >= (height/8) )
 			{
 				_kernel_video_scroll_up();
-				cursor_y--;
+                _kernel_video_set_character_position( 0, cursor_y - 1 );
 			}
 			print = 0; advance = 0;
 			break;
@@ -450,31 +451,32 @@ void _kernel_video_print_char( char c )
 	{
 
 		// slower version
+        _fastcharplot( c );
+        /*
 		for ( loop_y = 0 ; loop_y < 8 ; loop_y++ )
 		{
 			for ( loop_x = 7 ; loop_x >= 0 ; loop_x-- )
 			{
-				// Acorn Font: 1<<(0+loop_x) - DOS Font: 1<<(7-loop_x)
 				if ( (fontdata_8x8[c*8+loop_y] & (1<<(0+loop_x))) )
-				//if ( (fontdata_8x8[c*8+loop_y] & (1<<(7-loop_x))) )
 					colour = colour_foreground;
 				else
 					colour = colour_background;
 				_kernel_video_plot_pixel( (cursor_x*8)+(7-loop_x)+0 , (cursor_y*8)+loop_y , colour );
 			}
 		}
+        */
 
 		if ( advance )
 		{
-			cursor_x++;
+            _kernel_video_set_character_position( cursor_x + 1, cursor_y );
 			if ( cursor_x >= (width/8) )
 			{
-				cursor_x = 0; cursor_y++;
+                _kernel_video_set_character_position( 0, cursor_y + 1 );
 			}
 			if ( cursor_y >= (height/8) )
 			{
 				_kernel_video_scroll_up();
-				cursor_y--;
+                _kernel_video_set_character_position( cursor_x, cursor_y - 1 );
 			}
 		}
 	}
