@@ -26,7 +26,7 @@
 	extern void 			put_word( unsigned int, unsigned int );
 	extern unsigned int		get_word( unsigned int );
 
-	extern void 			move1k( unsigned int, unsigned int );
+	extern void 			move1k( unsigned int, unsigned int, unsigned int );
 	extern void 			blank1k( unsigned int, unsigned int );
 
 	extern void 			delay_loop( unsigned int );

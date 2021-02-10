@@ -37,78 +37,36 @@ _fastcharplot:
                                 LDR             x2      , _cursor_vram_address_ptr                  // x2 points to VRAM
                                 LDR             x2      , [x2]
 
-_fastcharplot_row_0:            MOV             x3      , x0, LSR #(7*8)                            // determine the 8-bit "row" pixels
-                                AND             x3      , x3, #0xff
+                                MOV             x8      , #8
+                                LDR             x9      , _colour_f_ptr                             // x9 is the foreground colour
+                                LDR             x9      , [x9]
+                                LDR             x10     , _colour_b_ptr                             // x10 is the background colour
+                                LDR             x10     , [x10]
+
+_fastcharplot_loop:
+                                AND             x3      , x0, #0xff                                 // determine the 8-bit "row" pixels
                                 ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
+
                                 LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
                                 LDP             x6      , x7, [x3, #1*16]
+
+                                AND             x4      , x4, x9                                    // apply foreground/background colours
+                                AND             x5      , x5, x9
+                                AND             x6      , x6, x9
+                                AND             x7      , x7, x9
+                                ORR             x4      , x4, x10
+                                ORR             x5      , x5, x10
+                                ORR             x6      , x6, x10
+                                ORR             x7      , x7, x10
+
                                 STP             x4      , x5, [x2, #0*16]
                                 STP             x6      , x7, [x2, #1*16]
-                                ADD             x2      , x2, #640*4                                // move VRAM down one row
 
-_fastcharplot_row_1:            MOV             x3      , x0, LSR #(6*8)                            // determine the 8-bit "row" pixels
-                                AND             x3      , x3, #0xff
-                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
-                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
-                                LDP             x6      , x7, [x3, #1*16]
-                                STP             x4      , x5, [x2, #0*16]
-                                STP             x6      , x7, [x2, #1*16]
                                 ADD             x2      , x2, #640*4                                // move VRAM down one row
+                                MOV             x0      , x0, LSR #8                                // shift ASCII "bit" data
 
-_fastcharplot_row_2:            MOV             x3      , x0, LSR #(5*8)                            // determine the 8-bit "row" pixels
-                                AND             x3      , x3, #0xff
-                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
-                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
-                                LDP             x6      , x7, [x3, #1*16]
-                                STP             x4      , x5, [x2, #0*16]
-                                STP             x6      , x7, [x2, #1*16]
-                                ADD             x2      , x2, #640*4                                // move VRAM down one row
-
-_fastcharplot_row_3:            MOV             x3      , x0, LSR #(4*8)                            // determine the 8-bit "row" pixels
-                                AND             x3      , x3, #0xff
-                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
-                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
-                                LDP             x6      , x7, [x3, #1*16]
-                                STP             x4      , x5, [x2, #0*16]
-                                STP             x6      , x7, [x2, #1*16]
-                                ADD             x2      , x2, #640*4                                // move VRAM down one row
-
-_fastcharplot_row_4:            MOV             x3      , x0, LSR #(3*8)                            // determine the 8-bit "row" pixels
-                                AND             x3      , x3, #0xff
-                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
-                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
-                                LDP             x6      , x7, [x3, #1*16]
-                                STP             x4      , x5, [x2, #0*16]
-                                STP             x6      , x7, [x2, #1*16]
-                                ADD             x2      , x2, #640*4                                // move VRAM down one row
-
-_fastcharplot_row_5:            MOV             x3      , x0, LSR #(2*8)                            // determine the 8-bit "row" pixels
-                                AND             x3      , x3, #0xff
-                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
-                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
-                                LDP             x6      , x7, [x3, #1*16]
-                                STP             x4      , x5, [x2, #0*16]
-                                STP             x6      , x7, [x2, #1*16]
-                                ADD             x2      , x2, #640*4                                // move VRAM down one row
-
-_fastcharplot_row_6:            MOV             x3      , x0, LSR #(1*8)                            // determine the 8-bit "row" pixels
-                                AND             x3      , x3, #0xff
-                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
-                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
-                                LDP             x6      , x7, [x3, #1*16]
-                                STP             x4      , x5, [x2, #0*16]
-                                STP             x6      , x7, [x2, #1*16]
-                                ADD             x2      , x2, #640*4                                // move VRAM down one row
-
-_fastcharplot_row_7:            MOV             x3      , x0, LSR #(0*8)                            // determine the 8-bit "row" pixels
-                                AND             x3      , x3, #0xff
-                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
-                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
-                                LDP             x6      , x7, [x3, #1*16]
-                                STP             x4      , x5, [x2, #0*16]
-                                STP             x6      , x7, [x2, #1*16]
-                                ADD             x2      , x2, #640*4                                // move VRAM down one row
-
+                                SUBS            x8      , x8, #1
+                                BNE             _fastcharplot_loop
                                 RET
 
 
@@ -116,6 +74,8 @@ _fastcharplot_row_7:            MOV             x3      , x0, LSR #(0*8)        
 _fontdata_8x8_ptr:              .dword      fontdata_8x8
 _fontdata_64bit_ptr:            .dword      fontdata_64bit
 _cursor_vram_address_ptr:       .dword      cursor_vram_address
+_colour_f_ptr:                  .dword      colour_f
+_colour_b_ptr:                  .dword      colour_b
 
 
 put_word:
@@ -160,85 +120,169 @@ delay_loop2:
                                 // On entry:
                                 // x0 = pointer to source memory location
                                 // x1 = pointer to target memory location
+                                // x2 = number of Kb
                                 //
                                 // On exit:
                                 // x0-x1 = pointer to next locations (both source and target)
                                 //
 move1k:
-                                STP             x2      , x3, [sp, #-1 * 16]
-                                STP             x4      , x5, [sp, #-2 * 16]
-                                STP             x6      , x7, [sp, #-3 * 16]
-                                STP             x8      , x9, [sp, #-4 * 16]
 
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
-                                LDP             x2      , x3, [x0], #16; STP x2, x3, [x1], #16
-                                    LDP             x4      , x5, [x0], #16; STP x4, x5, [x1], #16
-                                    LDP             x6      , x7, [x0], #16; STP x6, x7, [x1], #16
-                                    LDP             x8      , x9, [x0], #16; STP x8, x9, [x1], #16
+                                STP             x3      , x4, [sp, #-1 * 16]
+                                STP             x5      , x6, [sp, #-2 * 16]
+                                STP             x7      , x8, [sp, #-3 * 16]
+                                STP             x9      , x10,[sp, #-4 * 16]
 
-                                LDP             x2      , x3, [sp, #-1 * 16]
-                                LDP             x4      , x5, [sp, #-2 * 16]
-                                LDP             x6      , x7, [sp, #-3 * 16]
-                                LDP             x8      , x9, [sp, #-4 * 16]
+move1k_loop:
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                LDP             x3      , x4, [x0], #16
+                                    LDP         x5      , x6, [x0], #16
+                                    LDP         x7      , x8, [x0], #16
+                                    LDP         x9      , x10,[x0], #16
+                                    STP         x3      , x4, [x1], #16
+                                    STP         x5      , x6, [x1], #16
+                                    STP         x7      , x8, [x1], #16
+                                    STP         x9      , x10,[x1], #16
+
+                                    subs x2,x2,#1
+                                    bne move1k_loop
+                                LDP             x3      , x4, [sp, #-1 * 16]
+                                LDP             x5      , x6, [sp, #-2 * 16]
+                                LDP             x7      , x8, [sp, #-3 * 16]
+                                LDP             x9      , x10,[sp, #-4 * 16]
                                 RET
 
 

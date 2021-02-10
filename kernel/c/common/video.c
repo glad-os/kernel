@@ -25,10 +25,11 @@
 #include "define.h"
 
 
-unsigned int            mode, width, height, colour_foreground, colour_background, cursor_x, cursor_y;
+unsigned int            mode, width, height, cursor_x, cursor_y;
 volatile uint32_t       mailbox_buffer[ 256 ] __attribute__( ( aligned(16) ) );
 uintptr_t               video_ram_address = 0, cursor_vram_address = 0;
 extern unsigned char    pi_logo_map[];
+uintptr_t               colour_f, colour_b;
 
 
 void _kernel_video_display_memory	( unsigned int tag );
@@ -350,14 +351,18 @@ void _kernel_video_cls( void )
  *
  * Sets the foreground or background colour.
  *
+ * 0xAARRGGBB
+ *
  */
 void _kernel_video_set_colour( unsigned int foreground, unsigned int colour )
 {
 
 	if ( foreground ) {
-		colour_foreground = colour;
+        // set a 64-bit value showing the "filter" for this colour
+        colour_f =  ((uintptr_t) colour << 32 ) + colour;
 	} else {
-		colour_background = colour;
+        // set a 64-bit value showing the "filter" for this colour
+        colour_b =  ((uintptr_t) colour << 32 ) + colour;
 	}
 
 }
@@ -450,21 +455,7 @@ void _kernel_video_print_char( char c )
 	if ( print )
 	{
 
-		// slower version
         _fastcharplot( c );
-        /*
-		for ( loop_y = 0 ; loop_y < 8 ; loop_y++ )
-		{
-			for ( loop_x = 7 ; loop_x >= 0 ; loop_x-- )
-			{
-				if ( (fontdata_8x8[c*8+loop_y] & (1<<(0+loop_x))) )
-					colour = colour_foreground;
-				else
-					colour = colour_background;
-				_kernel_video_plot_pixel( (cursor_x*8)+(7-loop_x)+0 , (cursor_y*8)+loop_y , colour );
-			}
-		}
-        */
 
 		if ( advance )
 		{
@@ -588,11 +579,7 @@ void _kernel_video_scroll_up( void )
 	src = video_ram_address + ( VIDEO_WIDTH * 4 * 8);
     dst = video_ram_address;
 	kb = (VIDEO_WIDTH * 4 * (VIDEO_HEIGHT-8)) / 1024;
-    while ( kb-- )
-    {
-    	move1k( src, dst );
-        src += 1024; dst += 1024;
-    }
+   	move1k( src, dst, kb );
 
     // blank the bottom row
     src = video_ram_address + ( VIDEO_WIDTH*4 * (VIDEO_HEIGHT-8) );
