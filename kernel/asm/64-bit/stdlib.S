@@ -29,28 +29,92 @@
                                  */
 
 _fastcharplot:
-                                LDR             x1      , _fontdata_ptr                             // x1 points to font data
-                                ADD             x1      , x1, x0, LSL #3
+                                LDR             x1      , _fontdata_8x8_ptr                         // x0 contains *entire* 8 bytes of ASCII "bit" data
+                                LDR             x0      , [x1, x0, LSL #3]                          
+
+                                LDR             x1      , _fontdata_64bit_ptr                       // x1 points to 64-bit font LUT
+
                                 LDR             x2      , _cursor_vram_address_ptr                  // x2 points to VRAM
                                 LDR             x2      , [x2]
-                                MOV             x3      , #8
 
-_fastcharplot_row:
-                                LDP             x4      , x5, [x1], #16                             // data in 64-bit format
-                                LDP             x6      , x7, [x1], #16
+_fastcharplot_row_0:            MOV             x3      , x0, LSR #(7*8)                            // determine the 8-bit "row" pixels
+                                AND             x3      , x3, #0xff
+                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
+                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
+                                LDP             x6      , x7, [x3, #1*16]
                                 STP             x4      , x5, [x2, #0*16]
                                 STP             x6      , x7, [x2, #1*16]
-                                ADD             x2      , x2, #640*4                                // move VRAM pointer to next row
+                                ADD             x2      , x2, #640*4                                // move VRAM down one row
 
-_fastcharplot_nextrow:
-                                SUBS            x3      , x3, #1
-                                BNE             _fastcharplot_row
+_fastcharplot_row_1:            MOV             x3      , x0, LSR #(6*8)                            // determine the 8-bit "row" pixels
+                                AND             x3      , x3, #0xff
+                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
+                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
+                                LDP             x6      , x7, [x3, #1*16]
+                                STP             x4      , x5, [x2, #0*16]
+                                STP             x6      , x7, [x2, #1*16]
+                                ADD             x2      , x2, #640*4                                // move VRAM down one row
+
+_fastcharplot_row_2:            MOV             x3      , x0, LSR #(5*8)                            // determine the 8-bit "row" pixels
+                                AND             x3      , x3, #0xff
+                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
+                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
+                                LDP             x6      , x7, [x3, #1*16]
+                                STP             x4      , x5, [x2, #0*16]
+                                STP             x6      , x7, [x2, #1*16]
+                                ADD             x2      , x2, #640*4                                // move VRAM down one row
+
+_fastcharplot_row_3:            MOV             x3      , x0, LSR #(4*8)                            // determine the 8-bit "row" pixels
+                                AND             x3      , x3, #0xff
+                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
+                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
+                                LDP             x6      , x7, [x3, #1*16]
+                                STP             x4      , x5, [x2, #0*16]
+                                STP             x6      , x7, [x2, #1*16]
+                                ADD             x2      , x2, #640*4                                // move VRAM down one row
+
+_fastcharplot_row_4:            MOV             x3      , x0, LSR #(3*8)                            // determine the 8-bit "row" pixels
+                                AND             x3      , x3, #0xff
+                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
+                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
+                                LDP             x6      , x7, [x3, #1*16]
+                                STP             x4      , x5, [x2, #0*16]
+                                STP             x6      , x7, [x2, #1*16]
+                                ADD             x2      , x2, #640*4                                // move VRAM down one row
+
+_fastcharplot_row_5:            MOV             x3      , x0, LSR #(2*8)                            // determine the 8-bit "row" pixels
+                                AND             x3      , x3, #0xff
+                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
+                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
+                                LDP             x6      , x7, [x3, #1*16]
+                                STP             x4      , x5, [x2, #0*16]
+                                STP             x6      , x7, [x2, #1*16]
+                                ADD             x2      , x2, #640*4                                // move VRAM down one row
+
+_fastcharplot_row_6:            MOV             x3      , x0, LSR #(1*8)                            // determine the 8-bit "row" pixels
+                                AND             x3      , x3, #0xff
+                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
+                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
+                                LDP             x6      , x7, [x3, #1*16]
+                                STP             x4      , x5, [x2, #0*16]
+                                STP             x6      , x7, [x2, #1*16]
+                                ADD             x2      , x2, #640*4                                // move VRAM down one row
+
+_fastcharplot_row_7:            MOV             x3      , x0, LSR #(0*8)                            // determine the 8-bit "row" pixels
+                                AND             x3      , x3, #0xff
+                                ADD             x3      , x1, x3, LSL #5                            // obtain offset into LUT
+                                LDP             x4      , x5, [x3, #0*16]                           // LUT->VRAM (4 x 64-bit words = 8 x 32-bit pixels)
+                                LDP             x6      , x7, [x3, #1*16]
+                                STP             x4      , x5, [x2, #0*16]
+                                STP             x6      , x7, [x2, #1*16]
+                                ADD             x2      , x2, #640*4                                // move VRAM down one row
 
                                 RET
 
 
                                 .balign     8
-_fontdata_ptr:                  .dword      fontdata_8x8
+_fontdata_8x8_ptr:              .dword      fontdata_8x8
+_fontdata_64bit_ptr:            .dword      fontdata_64bit
 _cursor_vram_address_ptr:       .dword      cursor_vram_address
 
 
